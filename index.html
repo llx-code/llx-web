@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记忆空间 - 精美备忘录</title>
+    <title>记忆空间 - 优化版备忘录</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
@@ -33,6 +33,7 @@
                     boxShadow: {
                         'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
                         'card-hover': '0 10px 30px rgba(0, 0, 0, 0.12)',
+                        'auth': '0 10px 50px rgba(79, 70, 229, 0.15)',
                     }
                 },
             }
@@ -44,106 +45,426 @@
             .content-auto {
                 content-visibility: auto;
             }
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all;
             }
-            .transition-height {
-                transition: max-height 0.3s ease-in-out;
+            .auth-card {
+                @apply bg-white dark:bg-neutral-800 rounded-2xl shadow-auth p-8 w-full max-w-md transform transition-all duration-500;
+            }
+            .btn-primary {
+                @apply bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0;
+            }
+            .fullscreen-editor {
+                @apply fixed inset-0 z-50 bg-white dark:bg-neutral-900 flex flex-col;
             }
         }
     </style>
 </head>
-<body class="bg-neutral-100 font-sans text-neutral-800 min-h-screen">
-    <!-- 顶部导航栏 -->
-    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa fa-book-open text-primary text-2xl"></i>
-                <h1 class="text-[clamp(1.25rem,3vw,1.75rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                    记忆空间
-                </h1>
+<body class="bg-neutral-100 dark:bg-neutral-900 font-sans text-neutral-800 dark:text-white min-h-screen transition-colors duration-300">
+    <!-- 认证页面 (默认显示登录表单) -->
+    <div id="authPage" class="min-h-screen flex flex-col">
+        <!-- 顶部装饰 -->
+        <div class="h-32 bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/5 dark:to-secondary/5 w-full"></div>
+        
+        <!-- 认证表单容器 -->
+        <div class="flex-grow flex items-center justify-center -mt-20 px-4">
+            <div class="auth-card">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary mb-4">
+                        <i class="fa fa-book-open text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                        记忆空间
+                    </h1>
+                    <p class="text-neutral-500 dark:text-neutral-400 mt-2">登录以管理您的备忘录</p>
+                </div>
+                
+                <!-- 登录表单 (默认显示) -->
+                <div id="loginForm">
+                    <div class="mb-5">
+                        <label for="loginUsername" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">用户名</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                                <i class="fa fa-user"></i>
+                            </span>
+                            <input type="text" id="loginUsername" 
+                                class="w-full pl-10 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 input-focus" 
+                                placeholder="请输入用户名" maxlength="14">
+                        </div>
+                        <p id="loginUserError" class="mt-1 text-sm text-red-500 hidden"></p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="loginPassword" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">密码</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input type="password" id="loginPassword" 
+                                class="w-full pl-10 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 input-focus" 
+                                placeholder="请输入6位数字密码" maxlength="6">
+                        </div>
+                        <p id="loginPwdError" class="mt-1 text-sm text-red-500 hidden"></p>
+                    </div>
+                    
+                    <button id="loginBtn" class="btn-primary w-full flex items-center justify-center">
+                        <i class="fa fa-sign-in mr-2"></i>
+                        <span>登录</span>
+                    </button>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-neutral-600 dark:text-neutral-400">
+                            没有账号？
+                            <button id="showRegisterBtn" class="text-primary font-medium hover:underline ml-1">
+                                注册一个
+                            </button>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 注册表单 (默认隐藏) -->
+                <div id="registerForm" class="hidden">
+                    <div class="mb-5">
+                        <label for="regUsername" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">用户名</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                                <i class="fa fa-user-plus"></i>
+                            </span>
+                            <input type="text" id="regUsername" 
+                                class="w-full pl-10 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 input-focus" 
+                                placeholder="最多14个字符" maxlength="14">
+                        </div>
+                        <p id="regUserError" class="mt-1 text-sm text-red-500 hidden"></p>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label for="regPassword" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">密码</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input type="password" id="regPassword" 
+                                class="w-full pl-10 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 input-focus" 
+                                placeholder="请设置6位数字密码" maxlength="6">
+                        </div>
+                        <p id="regPwdError" class="mt-1 text-sm text-red-500 hidden"></p>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="regConfirmPassword" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">确认密码</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input type="password" id="regConfirmPassword" 
+                                class="w-full pl-10 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 input-focus" 
+                                placeholder="再次输入密码" maxlength="6">
+                        </div>
+                        <p id="regConfirmError" class="mt-1 text-sm text-red-500 hidden"></p>
+                    </div>
+                    
+                    <button id="registerBtn" class="btn-primary w-full flex items-center justify-center">
+                        <i class="fa fa-user-plus mr-2"></i>
+                        <span>注册</span>
+                    </button>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-neutral-600 dark:text-neutral-400">
+                            已有账号？
+                            <button id="showLoginBtn" class="text-primary font-medium hover:underline ml-1">
+                                登录
+                            </button>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <button id="themeToggle" class="p-2 rounded-full hover:bg-neutral-200 transition-colors">
-                <i class="fa fa-moon-o text-neutral-600"></i>
-            </button>
-        </div>
-    </header>
-
-    <main class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- 统计和新建按钮 -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <div>
-                <h2 class="text-[clamp(1.1rem,2vw,1.5rem)] font-semibold text-neutral-800">我的备忘录</h2>
-                <p class="text-neutral-500 mt-1" id="memoCount">共有 <span class="font-medium">0</span> 条备忘录</p>
-            </div>
-            <button id="addMemoBtn" class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center space-x-2">
-                <i class="fa fa-plus"></i>
-                <span>新建备忘录</span>
-            </button>
         </div>
         
-        <!-- 备忘录列表 -->
-        <div id="memoList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- 备忘录卡片会通过JS动态生成 -->
-            <div class="col-span-full flex flex-col items-center justify-center py-16 text-neutral-500">
-                <i class="fa fa-sticky-note-o text-5xl mb-4 opacity-30"></i>
-                <p class="text-lg">还没有备忘录，点击"新建备忘录"开始添加</p>
-            </div>
-        </div>
-    </main>
+        <!-- 页脚 -->
+        <footer class="py-6 text-center text-neutral-500 dark:text-neutral-400 text-sm">
+            <p>记忆空间 &copy; 2023 - 安全存储您的珍贵记忆</p>
+        </footer>
+    </div>
 
-    <!-- 新建/编辑备忘录模态框 -->
-    <div id="memoModal" class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
-            <div class="p-5 border-b border-neutral-200 flex justify-between items-center">
-                <h3 id="modalTitle" class="text-xl font-semibold">新建备忘录</h3>
-                <button id="closeModal" class="p-2 rounded-full hover:bg-neutral-200 transition-colors">
-                    <i class="fa fa-times text-neutral-600"></i>
+    <!-- 备忘录主页面 (默认隐藏) -->
+    <div id="memoApp" class="hidden">
+        <!-- 顶部导航栏 -->
+        <header class="bg-white dark:bg-neutral-800 shadow-sm sticky top-0 z-40 transition-all duration-300">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-book-open text-primary text-2xl"></i>
+                    <h1 class="text-[clamp(1.25rem,3vw,1.75rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                        记忆空间
+                    </h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center">
+                        <span id="currentUser" class="text-neutral-700 dark:text-neutral-300 mr-2"></span>
+                        <button id="switchAccountBtn" class="text-neutral-600 dark:text-neutral-400 hover:text-primary dark:hover:text-primary transition-colors">
+                            <i class="fa fa-exchange mr-1"></i>切换账号
+                        </button>
+                    </div>
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                        <i class="fa fa-moon-o text-neutral-600 dark:text-neutral-300"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8 max-w-6xl">
+            <!-- 统计和新建按钮 -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-[clamp(1.1rem,2vw,1.5rem)] font-semibold text-neutral-800 dark:text-white">我的备忘录</h2>
+                    <p class="text-neutral-500 dark:text-neutral-400 mt-1" id="memoCount">共有 <span class="font-medium">0</span> 条备忘录</p>
+                </div>
+                <button id="addMemoBtn" class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center space-x-2">
+                    <i class="fa fa-plus"></i>
+                    <span>新建备忘录</span>
                 </button>
             </div>
             
-            <div class="p-5 flex-grow overflow-y-auto">
-                <div class="mb-4">
-                    <label for="memoTitle" class="block text-sm font-medium text-neutral-700 mb-1">标题</label>
-                    <input type="text" id="memoTitle" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all" placeholder="输入标题...">
-                </div>
-                
-                <div>
-                    <label for="memoContent" class="block text-sm font-medium text-neutral-700 mb-1">内容</label>
-                    <textarea id="memoContent" rows="8" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all resize-none" placeholder="输入内容..."></textarea>
+            <!-- 备忘录列表 -->
+            <div id="memoList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 备忘录卡片会通过JS动态生成 -->
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-neutral-500 dark:text-neutral-400">
+                    <i class="fa fa-sticky-note-o text-5xl mb-4 opacity-30"></i>
+                    <p class="text-lg">还没有备忘录，点击"新建备忘录"开始添加</p>
                 </div>
             </div>
+        </main>
+    </div>
+
+    <!-- 全屏编辑器 (默认隐藏) -->
+    <div id="fullscreenEditor" class="fullscreenEditor hidden">
+        <!-- 编辑器顶部工具栏 -->
+        <div class="bg-white dark:bg-neutral-800 shadow-sm py-3 px-6 flex justify-between items-center border-b border-neutral-200 dark:border-neutral-700 z-10">
+            <h3 id="editorTitle" class="text-lg font-medium">新建备忘录</h3>
+            <div class="flex items-center space-x-3">
+                <button id="saveEditorBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
+                    <i class="fa fa-save mr-1"></i>保存
+                </button>
+                <button id="cancelEditorBtn" class="p-2 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                    <i class="fa fa-times text-neutral-600 dark:text-neutral-300"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 编辑区域 -->
+        <div class="flex-grow flex flex-col p-6 md:p-10 overflow-hidden">
+            <input type="text" id="editorMemoTitle" 
+                class="text-2xl md:text-3xl font-semibold mb-6 border-b border-neutral-200 dark:border-neutral-700 pb-2 bg-transparent input-focus w-full" 
+                placeholder="输入标题...">
             
-            <div class="p-5 border-t border-neutral-200 flex justify-end space-x-3">
-                <button id="cancelBtn" class="px-5 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors">取消</button>
-                <button id="saveBtn" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">保存</button>
-            </div>
+            <textarea id="editorMemoContent" 
+                class="flex-grow w-full text-base md:text-lg resize-none bg-transparent input-focus outline-none" 
+                placeholder="开始输入内容..."></textarea>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // DOM 元素
+            // DOM 元素 - 认证相关
+            const authPage = document.getElementById('authPage');
+            const memoApp = document.getElementById('memoApp');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const showRegisterBtn = document.getElementById('showRegisterBtn');
+            const showLoginBtn = document.getElementById('showLoginBtn');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const switchAccountBtn = document.getElementById('switchAccountBtn');
+            const currentUserEl = document.getElementById('currentUser');
+            
+            // 登录表单元素
+            const loginUsername = document.getElementById('loginUsername');
+            const loginPassword = document.getElementById('loginPassword');
+            const loginUserError = document.getElementById('loginUserError');
+            const loginPwdError = document.getElementById('loginPwdError');
+            
+            // 注册表单元素
+            const regUsername = document.getElementById('regUsername');
+            const regPassword = document.getElementById('regPassword');
+            const regConfirmPassword = document.getElementById('regConfirmPassword');
+            const regUserError = document.getElementById('regUserError');
+            const regPwdError = document.getElementById('regPwdError');
+            const regConfirmError = document.getElementById('regConfirmError');
+            
+            // 备忘录元素
             const memoList = document.getElementById('memoList');
             const addMemoBtn = document.getElementById('addMemoBtn');
-            const memoModal = document.getElementById('memoModal');
-            const closeModal = document.getElementById('closeModal');
-            const cancelBtn = document.getElementById('cancelBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const modalTitle = document.getElementById('modalTitle');
-            const memoTitleInput = document.getElementById('memoTitle');
-            const memoContentInput = document.getElementById('memoContent');
             const memoCount = document.getElementById('memoCount');
             const themeToggle = document.getElementById('themeToggle');
             
-            // 备忘录数据
-            let memos = JSON.parse(localStorage.getItem('memos')) || [];
-            let currentMemoId = null; // 当前编辑的备忘录ID，null表示新建
+            // 全屏编辑器元素
+            const fullscreenEditor = document.getElementById('fullscreenEditor');
+            const editorTitle = document.getElementById('editorTitle');
+            const editorMemoTitle = document.getElementById('editorMemoTitle');
+            const editorMemoContent = document.getElementById('editorMemoContent');
+            const saveEditorBtn = document.getElementById('saveEditorBtn');
+            const cancelEditorBtn = document.getElementById('cancelEditorBtn');
+            
+            // 应用数据 (存储在localStorage，刷新后保留)
+            let users = JSON.parse(localStorage.getItem('memoUsers')) || {};
+            let currentUser = localStorage.getItem('currentMemoUser') || null;
+            let memos = [];
+            let currentMemoId = null; // 当前编辑的备忘录ID
             let isDarkMode = false;
             
-            // 初始化
-            renderMemos();
-            updateMemoCount();
+            // 初始化应用
+            initApp();
+            
+            function initApp() {
+                // 检查是否有已登录用户
+                if (currentUser && users[currentUser]) {
+                    showMemoApp();
+                } else {
+                    showAuthPage(); // 默认显示登录界面
+                }
+                
+                // 检查深色模式偏好
+                if (localStorage.getItem('darkMode') === 'true' || 
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('darkMode'))) {
+                    toggleTheme(true);
+                }
+            }
+            
+            // 显示认证页面 (默认显示登录表单)
+            function showAuthPage() {
+                authPage.classList.remove('hidden');
+                memoApp.classList.add('hidden');
+                fullscreenEditor.classList.add('hidden');
+                // 确保显示登录表单
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                loginUsername.focus();
+            }
+            
+            // 显示备忘录应用
+            function showMemoApp() {
+                if (!currentUser) return;
+                
+                // 从localStorage加载当前用户的备忘录
+                memos = users[currentUser].memos || [];
+                
+                // 更新UI
+                currentUserEl.textContent = currentUser;
+                renderMemos();
+                updateMemoCount();
+                
+                // 显示应用
+                authPage.classList.add('hidden');
+                memoApp.classList.remove('hidden');
+                fullscreenEditor.classList.add('hidden');
+            }
+            
+            // 注册新用户
+            function register() {
+                const username = regUsername.value.trim();
+                const password = regPassword.value.trim();
+                const confirmPassword = regConfirmPassword.value.trim();
+                let isValid = true;
+                
+                // 清空错误信息
+                regUserError.classList.add('hidden');
+                regPwdError.classList.add('hidden');
+                regConfirmError.classList.add('hidden');
+                
+                // 验证用户名 (≤14字符)
+                if (!username) {
+                    showError(regUserError, '用户名不能为空');
+                    isValid = false;
+                } else if (username.length > 14) {
+                    showError(regUserError, '用户名不能超过14个字符');
+                    isValid = false;
+                } else if (users[username]) {
+                    showError(regUserError, '用户名已存在');
+                    isValid = false;
+                }
+                
+                // 验证密码 (6位数字)
+                if (!password) {
+                    showError(regPwdError, '密码不能为空');
+                    isValid = false;
+                } else if (password.length !== 6 || !/^\d+$/.test(password)) {
+                    showError(regPwdError, '密码必须是6位数字');
+                    isValid = false;
+                }
+                
+                // 验证确认密码
+                if (password !== confirmPassword) {
+                    showError(regConfirmError, '两次输入的密码不一致');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    // 创建新用户并存储到localStorage
+                    users[username] = {
+                        password: password,
+                        memos: []
+                    };
+                    localStorage.setItem('memoUsers', JSON.stringify(users));
+                    
+                    // 自动登录新用户
+                    currentUser = username;
+                    localStorage.setItem('currentMemoUser', currentUser);
+                    
+                    // 切换到应用
+                    showMemoApp();
+                    
+                    // 重置表单
+                    resetRegisterForm();
+                }
+            }
+            
+            // 登录
+            function login() {
+                const username = loginUsername.value.trim();
+                const password = loginPassword.value.trim();
+                let isValid = true;
+                
+                // 清空错误信息
+                loginUserError.classList.add('hidden');
+                loginPwdError.classList.add('hidden');
+                
+                // 验证用户名
+                if (!username) {
+                    showError(loginUserError, '用户名不能为空');
+                    isValid = false;
+                } else if (!users[username]) {
+                    showError(loginUserError, '用户名不存在');
+                    isValid = false;
+                }
+                
+                // 验证密码
+                if (!password) {
+                    showError(loginPwdError, '密码不能为空');
+                    isValid = false;
+                } else if (users[username] && users[username].password !== password) {
+                    showError(loginPwdError, '密码不正确');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    // 保存当前用户到localStorage
+                    currentUser = username;
+                    localStorage.setItem('currentMemoUser', currentUser);
+                    
+                    // 切换到应用
+                    showMemoApp();
+                    
+                    // 重置表单
+                    resetLoginForm();
+                }
+            }
+            
+            // 切换账号 (回到登录界面)
+            function switchAccount() {
+                currentUser = null;
+                localStorage.removeItem('currentMemoUser');
+                showAuthPage();
+            }
             
             // 渲染所有备忘录
             function renderMemos() {
@@ -167,7 +488,7 @@
                     memoCard.className = 'bg-white dark:bg-neutral-800 rounded-xl shadow-card hover:shadow-card-hover p-5 transition-all duration-300 transform hover:-translate-y-1 border border-neutral-200 dark:border-neutral-700 group';
                     memoCard.setAttribute('data-id', memo.id);
                     
-                    // 生成随机渐变色背景
+                    // 随机渐变色背景
                     const gradients = [
                         'from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-100 dark:border-blue-800/30',
                         'from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-pink-100 dark:border-pink-800/30',
@@ -213,72 +534,42 @@
                     memoList.appendChild(memoCard);
                     
                     // 添加事件监听
-                    memoCard.querySelector('.edit-btn').addEventListener('click', () => editMemo(memo.id));
+                    memoCard.querySelector('.edit-btn').addEventListener('click', () => openEditor(true, memo));
                     memoCard.querySelector('.delete-btn').addEventListener('click', () => deleteMemo(memo.id));
                     memoCard.addEventListener('click', (e) => {
-                        // 防止点击按钮时触发卡片点击事件
                         if (!e.target.closest('button')) {
-                            editMemo(memo.id);
+                            openEditor(true, memo);
                         }
                     });
                 });
             }
             
-            // 更新备忘录计数
-            function updateMemoCount() {
-                memoCount.querySelector('span').textContent = memos.length;
-            }
-            
-            // 打开模态框
-            function openModal(isEdit = false, memo = null) {
+            // 打开全屏编辑器
+            function openEditor(isEdit = false, memo = null) {
                 if (isEdit && memo) {
-                    modalTitle.textContent = '编辑备忘录';
-                    memoTitleInput.value = memo.title || '';
-                    memoContentInput.value = memo.content || '';
+                    editorTitle.textContent = '编辑备忘录';
+                    editorMemoTitle.value = memo.title || '';
+                    editorMemoContent.value = memo.content || '';
                     currentMemoId = memo.id;
                 } else {
-                    modalTitle.textContent = '新建备忘录';
-                    memoTitleInput.value = '';
-                    memoContentInput.value = '';
+                    editorTitle.textContent = '新建备忘录';
+                    editorMemoTitle.value = '';
+                    editorMemoContent.value = '';
                     currentMemoId = null;
                 }
                 
-                // 显示模态框并添加动画
-                memoModal.classList.remove('opacity-0', 'pointer-events-none');
-                memoModal.querySelector('div').classList.remove('scale-95');
-                memoModal.querySelector('div').classList.add('scale-100');
-                
-                // 自动聚焦到标题输入框
+                // 显示全屏编辑器
+                fullscreenEditor.classList.remove('hidden');
+                // 自动聚焦到标题
                 setTimeout(() => {
-                    memoTitleInput.focus();
-                }, 300);
+                    editorMemoTitle.focus();
+                }, 100);
             }
             
-            // 关闭模态框
-            function closeModalFunc() {
-                memoModal.classList.add('opacity-0', 'pointer-events-none');
-                memoModal.querySelector('div').classList.remove('scale-100');
-                memoModal.querySelector('div').classList.add('scale-95');
-                currentMemoId = null;
-            }
-            
-            // 新建备忘录
-            function addMemo() {
-                openModal();
-            }
-            
-            // 编辑备忘录
-            function editMemo(id) {
-                const memo = memos.find(m => m.id === id);
-                if (memo) {
-                    openModal(true, memo);
-                }
-            }
-            
-            // 保存备忘录
-            function saveMemo() {
-                const title = memoTitleInput.value.trim();
-                const content = memoContentInput.value.trim();
+            // 保存编辑内容
+            function saveEditor() {
+                const title = editorMemoTitle.value.trim();
+                const content = editorMemoContent.value.trim();
                 
                 if (!title && !content) {
                     alert('标题和内容不能同时为空');
@@ -308,75 +599,129 @@
                     memos.push(newMemo);
                 }
                 
-                // 保存到本地存储
-                localStorage.setItem('memos', JSON.stringify(memos));
+                // 保存到localStorage (刷新后保留)
+                users[currentUser].memos = memos;
+                localStorage.setItem('memoUsers', JSON.stringify(users));
                 
-                // 更新UI
+                // 更新列表并关闭编辑器
                 renderMemos();
                 updateMemoCount();
-                closeModalFunc();
+                fullscreenEditor.classList.add('hidden');
+                currentMemoId = null;
             }
             
             // 删除备忘录
             function deleteMemo(id) {
                 if (confirm('确定要删除这条备忘录吗？')) {
                     memos = memos.filter(m => m.id !== id);
-                    localStorage.setItem('memos', JSON.stringify(memos));
+                    
+                    // 保存到localStorage
+                    users[currentUser].memos = memos;
+                    localStorage.setItem('memoUsers', JSON.stringify(users));
+                    
                     renderMemos();
                     updateMemoCount();
                 }
             }
             
+            // 更新备忘录计数
+            function updateMemoCount() {
+                memoCount.querySelector('span').textContent = memos.length;
+            }
+            
             // 切换深色/浅色模式
-            function toggleTheme() {
-                isDarkMode = !isDarkMode;
-                document.documentElement.classList.toggle('dark', isDarkMode);
+            function toggleTheme(forceDark = null) {
+                isDarkMode = forceDark !== null ? forceDark : !isDarkMode;
                 
                 if (isDarkMode) {
-                    document.body.classList.add('dark:bg-neutral-900', 'dark:text-white');
+                    document.documentElement.classList.add('dark');
                     themeToggle.innerHTML = '<i class="fa fa-sun-o text-yellow-400"></i>';
                 } else {
-                    document.body.classList.remove('dark:bg-neutral-900', 'dark:text-white');
-                    themeToggle.innerHTML = '<i class="fa fa-moon-o text-neutral-600"></i>';
+                    document.documentElement.classList.remove('dark');
+                    themeToggle.innerHTML = '<i class="fa fa-moon-o text-neutral-600 dark:text-neutral-300"></i>';
                 }
                 
                 localStorage.setItem('darkMode', isDarkMode);
             }
             
-            // 事件监听
-            addMemoBtn.addEventListener('click', addMemo);
-            closeModal.addEventListener('click', closeModalFunc);
-            cancelBtn.addEventListener('click', closeModalFunc);
-            saveBtn.addEventListener('click', saveMemo);
+            // 显示错误信息
+            function showError(element, message) {
+                element.textContent = message;
+                element.classList.remove('hidden');
+                // 添加抖动动画
+                element.parentElement.classList.add('animate-shake');
+                setTimeout(() => {
+                    element.parentElement.classList.remove('animate-shake');
+                }, 500);
+            }
+            
+            // 重置登录表单
+            function resetLoginForm() {
+                loginUsername.value = '';
+                loginPassword.value = '';
+            }
+            
+            // 重置注册表单
+            function resetRegisterForm() {
+                regUsername.value = '';
+                regPassword.value = '';
+                regConfirmPassword.value = '';
+            }
+            
+            // 事件监听 - 认证相关
+            showRegisterBtn.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                regUsername.focus();
+            });
+            
+            showLoginBtn.addEventListener('click', () => {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                loginUsername.focus();
+            });
+            
+            loginBtn.addEventListener('click', login);
+            registerBtn.addEventListener('click', register);
+            switchAccountBtn.addEventListener('click', switchAccount);
+            
+            // 按Enter键登录/注册
+            loginUsername.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') loginPassword.focus();
+            });
+            
+            loginPassword.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') login();
+            });
+            
+            regUsername.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') regPassword.focus();
+            });
+            
+            regPassword.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') regConfirmPassword.focus();
+            });
+            
+            regConfirmPassword.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') register();
+            });
+            
+            // 事件监听 - 备忘录相关
+            addMemoBtn.addEventListener('click', () => openEditor());
+            saveEditorBtn.addEventListener('click', saveEditor);
+            cancelEditorBtn.addEventListener('click', () => {
+                fullscreenEditor.classList.add('hidden');
+                currentMemoId = null;
+            });
             themeToggle.addEventListener('click', toggleTheme);
             
-            // 按ESC键关闭模态框
+            // 编辑器快捷键 (Ctrl+S保存)
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !memoModal.classList.contains('pointer-events-none')) {
-                    closeModalFunc();
-                }
-            });
-            
-            // 点击模态框外部关闭
-            memoModal.addEventListener('click', (e) => {
-                if (e.target === memoModal) {
-                    closeModalFunc();
-                }
-            });
-            
-            // 按Ctrl+S或Cmd+S保存
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 's' && !memoModal.classList.contains('pointer-events-none')) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's' && !fullscreenEditor.classList.contains('hidden')) {
                     e.preventDefault();
-                    saveMemo();
+                    saveEditor();
                 }
             });
-            
-            // 检查深色模式偏好
-            if (localStorage.getItem('darkMode') === 'true' || 
-                (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('darkMode'))) {
-                toggleTheme();
-            }
         });
     </script>
 </body>
