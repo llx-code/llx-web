@@ -1,1295 +1,1226 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+<html lang="zh-CN"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记忆空间 - 优化版备忘录</title>
+    <title>OIer - 个人介绍</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
     
-    <!-- Tailwind 配置 -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563EB', // 蓝色主色调
-                        secondary: '#10B981', // 绿色辅助色
-                        neutral: {
-                            100: '#F9FAFB',
-                            200: '#F3F4F6',
-                            300: '#E5E7EB',
-                            400: '#D1D5DB',
-                            500: '#9CA3AF',
-                            600: '#6B7280',
-                            700: '#4B5563',
-                            800: '#1F2937',
-                            900: '#111827',
-                        }
+                        primary: '#6366f1', // 主色调：靛蓝色，代表智慧和技术
+                        secondary: '#10b981', // 辅助色：绿色，代表成长和进步
+                        dark: '#111827',
+                        darker: '#0f172a',
+                        light: '#f3f4f6',
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
                     },
-                    boxShadow: {
-                        'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
-                        'card-hover': '0 10px 30px rgba(0, 0, 0, 0.12)',
-                        'auth': '0 10px 50px rgba(37, 99, 235, 0.15)',
-                    }
-                },
+                }
             }
         }
     </script>
     
     <style type="text/tailwindcss">
         @layer utilities {
-            .content-auto {
-                content-visibility: auto;
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            .input-focus {
-                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all;
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
             }
-            .auth-card {
-                @apply bg-white rounded-2xl shadow-auth p-8 w-full max-w-md transform transition-all duration-500;
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
             }
-            .btn-primary {
-                @apply bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium hover:opacity-90 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0;
+            .card-hover {
+                transition: all 0.3s ease;
             }
-            .fullscreen-editor {
-                @apply fixed inset-0 z-50 bg-white flex flex-col;
+            .card-hover:hover {
+                transform: translateY(-5px);
             }
-            .animate-fade {
-                animation: fade 0.3s ease-in-out;
+            .secret-hover {
+                transition: all 0.3s ease;
             }
-            .animate-shake {
-                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            .secret-hover:hover {
+                color: #6366f1;
+                cursor: pointer;
             }
-            .developer-item {
-                @apply bg-white border border-neutral-200 rounded-lg p-4 mb-3 flex justify-between items-center transition-all hover:shadow-md;
+            .code-block {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s ease-out;
             }
-            .developer-btn {
-                @apply p-2 rounded-lg hover:bg-neutral-200 transition-colors;
+            .code-block.expanded {
+                max-height: 1000px;
+                transition: max-height 1s ease-in;
             }
-            .user-profile-input {
-                @apply w-full px-4 py-2 border border-neutral-300 rounded-lg bg-neutral-50 input-focus mb-4;
+            /* 新增代码块样式 */
+            .code-content {
+                max-height: 500px;
+                overflow-y: auto;
+                /* 移除滚动条但保留滚动功能 */
+                scrollbar-width: none; /* Firefox */
             }
-            @keyframes fade {
-                0% { opacity: 0; }
-                100% { opacity: 1; }
+            .code-content::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Edge */
             }
-            @keyframes shake {
-                10%, 90% { transform: translateX(-1px); }
-                20%, 80% { transform: translateX(2px); }
-                30%, 50%, 70% { transform: translateX(-3px); }
-                40%, 60% { transform: translateX(3px); }
+            /* 新增文本截断类 */
+            .text-truncate {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
+            /* 社交媒体链接优化 */
+            .social-link {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 1;
+                -webkit-box-orient: vertical;
+                white-space: normal;
+            }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
     </style>
 </head>
-<body class="bg-neutral-100 font-sans text-neutral-800 min-h-screen">
-    <!-- 认证页面 (默认显示登录表单) -->
-    <div id="authPage" class="min-h-screen flex flex-col animate-fade bg-gradient-to-br from-blue-100 to-green-100">
-        <!-- 认证表单容器 -->
-        <div class="flex-grow flex items-center justify-center px-4 py-10">
-            <div class="auth-card">
-                <div class="text-center mb-8">
-                    <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                        记忆空间
-                    </h1>
-                    <p class="text-neutral-500 mt-2">登录以管理您的备忘录</p>
-                </div>
-                
-                <!-- 登录表单 (默认显示) -->
-                <div id="loginForm">
-                    <div class="mb-5">
-                        <label for="loginUsername" class="block text-sm font-medium text-neutral-700 mb-1">用户名</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <i class="fa fa-user"></i>
-                            </span>
-                            <input type="text" id="loginUsername" 
-                                class="w-full pl-10 px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 input-focus" 
-                                placeholder="请输入用户名" maxlength="14">
-                        </div>
-                        <p id="loginUserError" class="mt-1 text-sm text-red-500 hidden"></p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label for="loginPassword" class="block text-sm font-medium text-neutral-700 mb-1">密码</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <i class="fa fa-lock"></i>
-                            </span>
-                            <input type="password" id="loginPassword" 
-                                class="w-full pl-10 px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 input-focus" 
-                                placeholder="请输入6位数字密码" maxlength="6">
-                        </div>
-                        <p id="loginPwdError" class="mt-1 text-sm text-red-500 hidden"></p>
-                    </div>
-                    
-                    <button id="loginBtn" class="btn-primary w-full flex items-center justify-center">
-                        <i class="fa fa-sign-in mr-2"></i>
-                        <span>登录</span>
-                    </button>
-                    
-                    <div class="mt-6 text-center">
-                        <p class="text-neutral-600">
-                            没有账号？
-                            <button id="showRegisterBtn" class="text-primary font-medium hover:underline ml-1">
-                                注册一个
-                            </button>
-                        </p>
-                    </div>
-                </div>
-                
-                <!-- 注册表单 (默认隐藏) -->
-                <div id="registerForm" class="hidden">
-                    <div class="mb-5">
-                        <label for="regUsername" class="block text-sm font-medium text-neutral-700 mb-1">用户名</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <i class="fa fa-user-plus"></i>
-                            </span>
-                            <input type="text" id="regUsername" 
-                                class="w-full pl-10 px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 input-focus" 
-                                placeholder="最多14个字符" maxlength="14">
-                        </div>
-                        <p id="regUserError" class="mt-1 text-sm text-red-500 hidden"></p>
-                    </div>
-                    
-                    <div class="mb-5">
-                        <label for="regPassword" class="block text-sm font-medium text-neutral-700 mb-1">密码</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <i class="fa fa-lock"></i>
-                            </span>
-                            <input type="password" id="regPassword" 
-                                class="w-full pl-10 px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 input-focus" 
-                                placeholder="请设置6位数字密码" maxlength="6">
-                        </div>
-                        <p id="regPwdError" class="mt-1 text-sm text-red-500 hidden"></p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label for="regConfirmPassword" class="block text-sm font-medium text-neutral-700 mb-1">确认密码</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <i class="fa fa-lock"></i>
-                            </span>
-                            <input type="password" id="regConfirmPassword" 
-                                class="w-full pl-10 px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 input-focus" 
-                                placeholder="再次输入密码" maxlength="6">
-                        </div>
-                        <p id="regConfirmError" class="mt-1 text-sm text-red-500 hidden"></p>
-                    </div>
-                    
-                    <button id="registerBtn" class="btn-primary w-full flex items-center justify-center">
-                        <i class="fa fa-user-plus mr-2"></i>
-                        <span>注册</span>
-                    </button>
-                    
-                    <div class="mt-6 text-center">
-                        <p class="text-neutral-600">
-                            已有账号？
-                            <button id="showLoginBtn" class="text-primary font-medium hover:underline ml-1">
-                                登录
-                            </button>
-                        </p>
-                    </div>
-                </div>
-            </div>
+
+<body class="bg-dark text-light font-sans">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-dark/80 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <span class="text-primary text-2xl"><i class="fa fa-code"></i></span>
+                <span class="font-mono font-bold text-xl">OIer_Profile</span>
+            </a>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex space-x-8">
+                <a href="#about" class="hover:text-primary transition-colors">关于我</a>
+                <a href="#contests" class="hover:text-primary transition-colors">竞赛经历</a>
+                <a href="#skills" class="hover:text-primary transition-colors">技能特长</a>
+                <a href="#projects" class="hover:text-primary transition-colors">项目展示</a>
+                <a href="#contact" class="hover:text-primary transition-colors">联系方式</a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-light text-xl">
+                <i class="fa fa-bars"></i>
+            </button>
         </div>
         
-        <!-- 页脚 -->
-        <footer class="py-6 text-center text-neutral-500 text-sm">
-            <p id="copyrightText" class="cursor-pointer hover:text-primary transition-colors">记忆空间 &copy; 2025 - 安全存储您的珍贵记忆</p>
-        </footer>
-    </div>
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-darker border-t border-gray-800">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+                <a href="#about" class="hover:text-primary transition-colors py-2">关于我</a>
+                <a href="#contests" class="hover:text-primary transition-colors py-2">竞赛经历</a>
+                <a href="#skills" class="hover:text-primary transition-colors py-2">技能特长</a>
+                <a href="#projects" class="hover:text-primary transition-colors py-2">项目展示</a>
+                <a href="#contact" class="hover:text-primary transition-colors py-2">联系方式</a>
+            </div>
+        </div>
+    </header>
 
-    <!-- 备忘录主页面 (默认隐藏) -->
-    <div id="memoApp" class="hidden animate-fade">
-        <!-- 顶部导航栏 -->
-        <header class="bg-white shadow-sm sticky top-0 z-40">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fa fa-book-open text-primary text-2xl"></i>
-                    <h1 class="text-[clamp(1.25rem,3vw,1.75rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                        记忆空间
-                    </h1>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="hidden md:flex items-center space-x-4">
-                        <span id="currentUser" class="text-neutral-700"></span>
-                        <div class="flex items-center space-x-2">
-                            <button id="switchAccountBtn" class="text-neutral-600 hover:text-primary transition-colors">
-                                <i class="fa fa-exchange mr-1"></i>切换账号
-                            </button>
-                            <button id="deleteAccountBtn" class="text-neutral-600 hover:text-red-500 transition-colors">
-                                <i class="fa fa-trash mr-1"></i>注销账号
-                            </button>
+    <main>
+        <!-- 英雄区域 -->
+        <section class="min-h-screen flex items-center pt-16 relative overflow-hidden">
+            <!-- 背景装饰 -->
+            <div class="absolute inset-0 z-0 opacity-10">
+                <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/30 blur-3xl"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-secondary/30 blur-3xl"></div>
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMTFhMjciIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoMnYyaC0yek0zMCAzNGgydjJoLTJ6TTI0IDM0aDJ2MmgtMnptNiA2aDJ2MmgtMnptLTYgNmgydjJoLTJ6TTIwIDQwaDJ2MmgtMnptNiA2aDJ2MmgtMnptLTYgNmgydjJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')]"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 py-16 z-10">
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="md:w-1/2">
+                        <div class="relative">
+                            <div class="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-primary/30 animate-float">
+                                <img src="https://picsum.photos/seed/oierself/400/400" alt="OIer个人照片" class="w-full h-full object-cover">
+                            </div>
+                            <div class="absolute -bottom-4 -right-4 bg-primary text-dark font-bold px-4 py-2 rounded-lg shadow-lg">
+                                <span class="font-mono">只会语法的蒟蒻</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:w-1/2 space-y-6">
+                        <div class="space-y-2">
+                            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight">
+                                你好，我是 <a href="https://oier.33dai.wiki/?query=%E5%88%98%E5%87%8C%E6%BA%AA" target="_blank" class="bg-gradient-to-r from-primary to-secondary text-gradient">刘凌溪</a>
+                            <p class="text-xl text-gray-400">算法竞赛 | 程序设计 爱好者</p>
+                        </h1></div>
+                        
+                        <p class="text-gray-300 text-lg leading-relaxed">热衷于算法竞赛与程序设计，享受解决复杂问题的乐趣。 从C++到数据结构，从贪心算法到动态规划，不断探索编程世界的奥秘。</p>
+                        
+                        <div class="flex flex-wrap gap-4 pt-4">
+                            <a href="#contact" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                                <i class="fa fa-paper-plane"></i> 联系我
+                            </a>
+                            <a href="#contests" class="bg-transparent border border-primary text-primary hover:bg-primary/10 px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2">
+                                <i class="fa fa-trophy"></i> 竞赛经历
+                            </a>
+                        </div>
+                        
+                        <div class="flex gap-4 pt-2">
+                            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                                <i class="fa fa-github"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                                <i class="fa fa-cnblogs"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                                <i class="fa fa-codeforces"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </header>
-
-        <main class="container mx-auto px-4 py-8 max-w-6xl">
-            <!-- 统计和新建按钮 -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <div>
-                    <h2 class="text-[clamp(1.1rem,2vw,1.5rem)] font-semibold text-neutral-800">我的备忘录</h2>
-                    <p class="text-neutral-500 mt-1" id="memoCount">共有 <span class="font-medium">0</span> 条备忘录</p>
-                </div>
-                <button id="addMemoBtn" class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center space-x-2">
-                    <i class="fa fa-plus"></i>
-                    <span>新建备忘录</span>
-                </button>
-            </div>
             
-            <!-- 备忘录列表 -->
-            <div id="memoList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- 备忘录卡片会通过JS动态生成 -->
-                <div class="col-span-full flex flex-col items-center justify-center py-16 text-neutral-500">
-                    <i class="fa fa-sticky-note-o text-5xl mb-4 opacity-30"></i>
-                    <p class="text-lg">还没有备忘录，点击"新建备忘录"开始添加</p>
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <a href="#about" class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-angle-down text-2xl"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- 关于我 -->
+        <section id="about" class="py-20 bg-darker relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">关于我</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-6">
+                        <p class="text-gray-300 leading-relaxed">&nbsp; &nbsp; 我是一名小升初学生，同时也是一名热爱算法竞赛的OIer。从四年级接触编程开始，学习c++时长两年半。</p>
+                        <p class="text-gray-300 leading-relaxed">&nbsp; &nbsp; 我的编程之旅始于Scratch，后来逐渐过渡到C++。在学习过程中，我发现自己对算法设计和问题求解有着浓厚的兴趣， 于是开始专注于信息学奥赛（OI）的学习与训练。</p>
+                        <p class="text-gray-300 leading-relaxed">&nbsp; &nbsp; 除了编程，我还喜欢数学，数学培养了我的逻辑思维能力，也为我的算法学习提供了很大帮助。 编程不仅是一种技能，更是一种解决问题的思维方式。</p>
+                        
+                        <div class="grid grid-cols-2 gap-4 pt-4">
+                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
+                                <h3 class="text-primary font-semibold mb-2">教育背景</h3>
+                                <p class="text-gray-400">上市中分部，住校</p>
+                            </div>
+                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
+                                <h3 class="text-primary font-semibold mb-2">编程年限</h3>
+                                <p class="text-gray-400">2.5年 摆烂式学习c++</p>
+                            </div>
+                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
+                                <h3 class="text-primary font-semibold mb-2">竞赛目标</h3>
+                                <p class="text-gray-400">NOIP 省二</p>
+                            </div>
+                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
+                                <h3 class="text-primary font-semibold mb-2">未来规划</h3>
+                                <p class="text-gray-400">科技特长生</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="bg-dark p-8 rounded-xl border border-gray-800 shadow-xl">
+                            <h3 class="text-xl font-bold mb-6 text-center">我的学习历程</h3>
+                            <div class="space-y-6">
+                                <div class="relative pl-8 before:absolute before:left-3 before:top-0 before:bottom-0 before:w-0.5 before:bg-gray-700">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                        <i class="fa fa-check text-sm"></i>
+                                    </div>
+                                    <p class="text-gray-400">学习C++基础语法，掌握简单算法</p>
+                                </div>
+                                <div class="relative pl-8 before:absolute before:left-3 before:top-0 before:bottom-0 before:w-0.5 before:bg-gray-700">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                        <i class="fa fa-check text-sm"></i>
+                                    </div>
+                                    <h4 class="font-semibold text-lg">2023 - 基础阶段</h4>
+                                    <p class="text-gray-400">语法学完，发现自己是蒟蒻</p>
+                                </div>
+                                <div class="relative pl-8 before:absolute before:left-3 before:top-0 before:bottom-0 before:w-0.5 before:bg-gray-700">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                        <i class="fa fa-check text-sm"></i>
+                                    </div>
+                                    <h4 class="font-semibold text-lg">2024 - 摆烂阶段</h4>
+                                    <p class="text-gray-400">摆烂式学习算法，什么都没学会，吃到CSP-J三等</p>
+                                </div>
+                                <div class="relative pl-8">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
+                                        <i class="fa fa-hourglass-half text-sm"></i>
+                                    </div>
+                                    <h4 class="font-semibold text-lg">2025 - 冲刺阶段</h4>
+                                    <p class="text-gray-400">冲CSP-J 一等 | CSP-S 二等</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 装饰元素 -->
+                        <div class="absolute -z-10 -top-6 -right-6 w-24 h-24 border-4 border-primary/30 rounded-lg"></div>
+                        <div class="absolute -z-10 -bottom-6 -left-6 w-32 h-32 border-4 border-secondary/30 rounded-lg"></div>
+                    </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </section>
 
-    <!-- 全屏编辑器 (默认隐藏) -->
-    <div id="fullscreenEditor" class="fullscreenEditor hidden animate-fade">
-        <!-- 编辑器顶部工具栏 -->
-        <div class="bg-white shadow-sm py-3 px-6 flex justify-between items-center border-b border-neutral-200 z-10">
-            <h3 id="editorTitle" class="text-lg font-medium">新建备忘录</h3>
-            <div class="flex items-center space-x-3">
-                <button id="saveEditorBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
-                    <i class="fa fa-save mr-1"></i>保存
-                </button>
-                <button id="cancelEditorBtn" class="p-2 rounded-full hover:bg-neutral-200 transition-colors">
-                    <i class="fa fa-times text-neutral-600"></i>
-                </button>
+        <!-- 竞赛经历 -->
+        <section id="contests" class="py-20 relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">竞赛经历</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                    <p class="text-gray-400 mt-4 max-w-2xl mx-auto">参加各类算法竞赛来对自己能力进行检验收获颇丰。</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 竞赛卡片1 -->
+                    <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 shadow-lg card-hover">
+                        <div class="h-40 bg-gradient-to-r from-primary/20 to-primary/5 p-6 flex items-center justify-center">
+                            <i class="fa fa-trophy text-6xl text-primary"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-xl font-bold">CSP-J非专业软件能力认证入门级第二轮</h3>
+                                <span class="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">2024/11</span>
+                            </div>
+                            <p class="text-gray-400 mb-4">三等奖</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center text-sm">
+                                    <span class="text-gray-500 w-24">参赛地点：</span>
+                                    <span>南京</span>
+                                </div>
+                                <div class="flex items-center text-sm">
+                                    <span class="text-gray-500 w-24">比赛项目：</span>
+                                    <span>c++程序设计</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 竞赛卡片2 -->
+                    <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 shadow-lg card-hover">
+                        <div class="h-40 bg-gradient-to-r from-purple-500/20 to-purple-500/5 p-6 flex items-center justify-center">
+                            <i class="fa fa-flag-checkered text-6xl text-purple-500"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-xl font-bold">江苏省"信息与未来"小学生编程思维展示活动</h3>
+                                <span class="bg-purple-500/20 text-purple-500 px-3 py-1 rounded-full text-sm font-medium">2025/5</span>
+                            </div>
+                            <p class="text-gray-400 mb-4">才能展示奖（一等奖）</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center text-sm">
+                                    <span class="text-gray-500 w-24">参赛地点：</span>
+                                    <span>常州</span>
+                                </div>
+                                <div class="flex items-center text-sm">
+                                    <span class="text-gray-500 w-24">比赛项目：</span>
+                                    <span>c++程序设计</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 竞赛统计 -->
+                <div class="mt-16 bg-darker p-8 rounded-xl border border-gray-800 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-8 text-center">竞赛数据统计</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <canvas id="contestChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-dark p-6 rounded-lg border border-gray-800 text-center">
+                                <div class="text-4xl font-bold text-primary mb-2">5+</div>
+                                <div class="text-gray-400">参与竞赛次数</div>
+                            </div>
+                            <div class="bg-dark p-6 rounded-lg border border-gray-800 text-center">
+                                <div class="text-4xl font-bold text-secondary mb-2">10+</div>
+                                <div class="text-gray-400">获得奖项数</div>
+                            </div>
+                            <div class="bg-dark p-6 rounded-lg border border-gray-800 text-center">
+                                <div class="text-4xl font-bold text-purple-500 mb-2">2</div>
+                                <div class="text-gray-400">省级一等奖</div>
+                            </div>
+                            <div class="bg-dark p-6 rounded-lg border border-gray-800 text-center">
+                                <div class="text-4xl font-bold text-yellow-500 mb-2">450+</div>
+                                <div class="text-gray-400">解决算法题数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- 技能特长 -->
+        <section id="skills" class="py-20 bg-darker relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">技能特长</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                    <p class="text-gray-400 mt-4 max-w-2xl mx-auto">我专注于算法竞赛与程序设计，不断学习和实践。</p>
+                </div>
+                
+                <!-- 第一行：编程语言和在线评测平台 -->
+                <div class="grid md:grid-cols-2 gap-12 mb-12">
+                    <!-- 编程语言技能 -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 flex items-center">
+                            <i class="fa fa-code text-primary mr-3"></i> 编程语言
+                        </h3>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="font-medium">C++</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="w-full bg-dark rounded-full h-2.5">
+                                    <div class="bg-primary h-2.5 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="font-medium">Python</span>
+                                    <span>15%</span>
+                                </div>
+                                <div class="w-full bg-dark rounded-full h-2.5">
+                                    <div class="bg-primary h-2.5 rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="font-medium">Scratch</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="w-full bg-dark rounded-full h-2.5">
+                                    <div class="bg-primary h-2.5 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="font-medium">HTML/CSS</span>
+                                    <span>0.5%</span>
+                                </div>
+                                <div class="w-full bg-dark rounded-full h-2.5">
+                                    <div class="bg-primary h-2.5 rounded-full" style="width: 0.5%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 在线评测平台 -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 flex items-center">
+                            <i class="fa fa-tasks text-primary mr-3"></i> 在线评测平台
+                        </h3>
+                        
+                        <div class="space-y-6">
+                            <div class="bg-dark p-4 rounded-lg border border-gray-800 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-[#B31B1B] flex items-center justify-center text-white mr-4">
+                                    <i class="fa fa-code"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-medium">Codeforces</h4>
+                                        <span class="text-primary">Rating: 0</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">Handle: 未注册</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-dark p-4 rounded-lg border border-gray-800 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-[#2383E2] flex items-center justify-center text-white mr-4">
+                                    <i class="fa fa-flag"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <h4 class="font-medium">洛谷</h4>
+                                        <span class="text-primary">橙名蒟蒻</span>
+                                    </div>
+                                    <p class="text-sm text-gray-400">用户名: 18021569331LLX</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 第二行：数据结构和算法能力 -->
+                <div class="grid md:grid-cols-2 gap-12">
+                    <!-- 数据结构 -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 flex items-center">
+                            <i class="fa fa-database text-primary mr-3"></i> 数据结构
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>数组与链表</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>栈与队列</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>树与二叉树</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>图论基础</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>哈希表</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>线段树与树状数组</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 算法能力 -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 flex items-center">
+                            <i class="fa fa-sitemap text-primary mr-3"></i> 算法能力
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>贪心算法</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>动态规划</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>搜索算法</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>分治算法</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>排序与查找</span>
+                            </div>
+                            <div class="bg-dark p-3 rounded-lg border border-gray-800 flex items-center">
+                                <i class="fa fa-check text-secondary mr-2"></i>
+                                <span>图论算法</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 项目展示 -->
+        <section id="projects" class="py-20 relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">项目展示</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                    <p class="text-gray-400 mt-4 max-w-2xl mx-auto">通过实际项目巩固所学知识，将算法应用到实践中可提升能力。</p>
+                </div>
+                
+                <div class="grid md:grid-cols-1 gap-8">
+                    <!-- 项目卡片1：随机迷宫 -->
+                    <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 shadow-lg card-hover">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">
+                                    <a href="https://note.ms/llxsjmg" target="_blank" class="hover:text-primary transition-colors">随机迷宫生成与游戏</a>
+                                </h3>
+                                <button class="toggle-code text-primary hover:text-primary/80 font-medium flex items-center text-sm transition-colors" data-target="maze-code">
+                                    <span class="text">收起代码</span>
+                                    <i class="fa fa-chevron-down ml-1 transition-transform duration-300" style="transform: rotate(180deg);"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">
+                                基于BFS和DFS算法实现的随机迷宫生成器，支持单人和双人模式，玩家通过键盘控制角色在迷宫中寻找出口。
+                            </p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">C++</span>
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">算法</span>
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">Windows API</span>
+                            </div>
+                            
+                            <!-- 代码块 - 只保留核心算法代码 -->
+                            <div id="maze-code" class="code-block mt-4 expanded">
+                                <div class="bg-gray-800 p-4 flex items-center">
+                                    <div class="flex space-x-2 mr-4">
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                    </div>
+                                    <span class="text-gray-400 text-sm font-mono">随机迷宫生成核心算法 (DFS实现)</span>
+                                </div>
+                                <div class="p-4">
+                                    <pre class="font-mono text-sm text-gray-300 code-content"><code>// 基于DFS的随机迷宫生成核心算法
+// 时间复杂度: O(rows * cols)
+// 空间复杂度: O(rows * cols)
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;stack&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+using namespace std;
+
+// 迷宫尺寸
+const int rows = 15;
+const int cols = 30;
+
+// 迷宫地图，true表示墙，false表示通路
+bool maze[rows][cols];
+// 记录是否访问过
+bool visited[rows][cols];
+
+// 方向数组：上、右、下、左
+const int dx[] = {-1, 0, 1, 0};
+const int dy[] = {0, 1, 0, -1};
+
+// 生成迷宫核心算法
+void generateMaze() {
+    srand(time(0));
+    
+    // 栈用于DFS
+    stack&lt;pair&lt;int, int&gt;&gt; s;
+    
+    // 从左上角开始(1,1)，保证是奇数坐标
+    int startX = 1, startY = 1;
+    s.push({startX, startY});
+    visited[startX][startY] = true;
+    maze[startX][startY] = false;  // 起点设为通路
+    
+    // 方向顺序数组，用于随机打乱
+    int dirs[4] = {0, 1, 2, 3};
+    
+    while (!s.empty()) {
+        auto current = s.top();
+        int x = current.first;
+        int y = current.second;
         
-        <!-- 编辑区域 -->
-        <div class="flex-grow flex flex-col p-6 md:p-10 overflow-hidden">
-            <input type="text" id="editorMemoTitle" 
-                class="text-2xl md:text-3xl font-semibold mb-6 border-b border-neutral-200 pb-2 bg-transparent input-focus w-full" 
-                placeholder="输入标题...">
+        // 随机打乱方向
+        for (int i = 0; i &lt; 4; i++) {
+            swap(dirs[i], dirs[rand() % 4]);
+        }
+        
+        // 检查所有方向
+        bool hasUnvisited = false;
+        for (int i = 0; i &lt; 4; i++) {
+            int dir = dirs[i];
+            int nx = x + 2 * dx[dir];  // 跳过一个格子
+            int ny = y + 2 * dy[dir];
             
-            <textarea id="editorMemoContent" 
-                class="flex-grow w-full text-base md:text-lg resize-none bg-transparent input-focus outline-none" 
-                placeholder="开始输入内容..."></textarea>
-        </div>
-    </div>
+            // 检查是否在范围内且未访问
+            if (nx &gt; 0 &amp;&amp; nx &lt; rows-1 &amp;&amp; ny &gt; 0 &amp;&amp; ny &lt; cols-1 &amp;&amp; !visited[nx][ny]) {
+                // 标记为已访问并设为通路
+                visited[nx][ny] = true;
+                maze[nx][ny] = false;
+                
+                // 打通当前格子与下一个格子之间的墙
+                maze[x + dx[dir]][y + dy[dir]] = false;
+                
+                // 入栈继续探索
+                s.push({nx, ny});
+                hasUnvisited = true;
+                break;
+            }
+        }
+        
+        // 如果没有未访问的邻居，则回溯
+        if (!hasUnvisited) {
+            s.pop();
+        }
+    }
+    
+    // 设置入口和出口
+    maze[startX][startY-1] = false;  // 入口
+    maze[rows-2][cols-1] = false;    // 出口
+}
 
-    <!-- 用户资料编辑对话框 (新增) -->
-    <div id="userProfileDialog" class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
-            <h3 id="profileDialogTitle" class="text-xl font-semibold mb-4 text-neutral-800">编辑用户资料</h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label for="profileUsername" class="block text-sm font-medium text-neutral-700 mb-1">用户名</label>
-                    <input type="text" id="profileUsername" class="user-profile-input" placeholder="用户名" maxlength="14">
-                </div>
-                
-                <div>
-                    <label for="profilePassword" class="block text-sm font-medium text-neutral-700 mb-1">密码 (6位数字)</label>
-                    <input type="password" id="profilePassword" class="user-profile-input" placeholder="留空则不修改" maxlength="6">
-                </div>
-                
-                <div>
-                    <label for="profileEmail" class="block text-sm font-medium text-neutral-700 mb-1">电子邮箱</label>
-                    <input type="email" id="profileEmail" class="user-profile-input" placeholder="用户邮箱（选填）">
-                </div>
-                
-                <div>
-                    <label for="profileNickname" class="block text-sm font-medium text-neutral-700 mb-1">昵称</label>
-                    <input type="text" id="profileNickname" class="user-profile-input" placeholder="用户昵称（选填）" maxlength="20">
-                </div>
-                
-                <div>
-                    <label for="profileNotes" class="block text-sm font-medium text-neutral-700 mb-1">备注</label>
-                    <textarea id="profileNotes" class="user-profile-input h-20 resize-none" placeholder="用户备注信息（选填）"></textarea>
-                </div>
-            </div>
-            
-            <p id="profileError" class="mt-2 text-sm text-red-500 hidden"></p>
-            
-            <div class="flex justify-end space-x-3 mt-6">
-                <button id="profileCancelBtn" class="px-5 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors">取消</button>
-                <button id="profileSaveBtn" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">保存</button>
-            </div>
-        </div>
-    </div>
+// 算法核心说明：
+// 1. 使用深度优先搜索(DFS)思想，通过栈实现
+// 2. 从起点开始，随机选择一个未访问的方向
+// 3. 移动两步(跳过一个格子)，并打通中间的墙
+// 4. 当无法继续前进时，回溯到上一个格子
+// 5. 重复过程直到所有可达格子都被访问
+// 这种方法能生成连通性好、路径复杂的迷宫</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目卡片2：汉诺塔游戏 -->
+                    <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 shadow-lg card-hover mt-8">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">
+                                    <a href="https://note.ms/llxhnt" target="_blank" class="hover:text-primary transition-colors">汉诺塔游戏与教学</a>
+                                </h3>
+                                <button class="toggle-code text-primary hover:text-primary/80 font-medium flex items-center text-sm transition-colors" data-target="hanoi-code">
+                                    <span class="text">收起代码</span>
+                                    <i class="fa fa-chevron-down ml-1 transition-transform duration-300" style="transform: rotate(180deg);"></i>
+                                </button>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">
+                                实现了经典的汉诺塔游戏，支持1-9级难度，包含游戏教程功能，展示最优解法的步骤，帮助理解递归算法思想。
+                            </p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">C++</span>
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">递归算法</span>
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">控制台应用</span>
+                            </div>
+                            
+                            <!-- 代码块 - 只保留核心算法代码 -->
+                            <div id="hanoi-code" class="code-block mt-4 expanded">
+                                <div class="bg-gray-800 p-4 flex items-center">
+                                    <div class="flex space-x-2 mr-4">
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                    </div>
+                                    <span class="text-gray-400 text-sm font-mono">汉诺塔递归核心算法实现</span>
+                                </div>
+                                <div class="p-4">
+                                    <pre class="font-mono text-sm text-gray-300 code-content"><code>// 汉诺塔递归核心算法
+// 将n个盘子从a柱移动到c柱，借助b柱
+// 时间复杂度: O(2^n)
+// 空间复杂度: O(n) - 递归栈深度
 
-    <!-- 确认对话框 -->
-    <div id="confirmDialog" class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
-            <h3 id="dialogTitle" class="text-xl font-semibold mb-4 text-neutral-800">确认操作</h3>
-            <p id="dialogMessage" class="text-neutral-600 mb-6">此操作将删除您的所有数据，且无法恢复。</p>
-            <div class="flex justify-end space-x-3">
-                <button id="dialogCancelBtn" class="px-5 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors">取消</button>
-                <button id="dialogConfirmBtn" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">确认</button>
-            </div>
-        </div>
-    </div>
+#include &lt;iostream&gt;
+using namespace std;
 
-    <!-- 开发者选项密码验证 -->
-    <div id="developerAuth" class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300">
-            <h3 class="text-xl font-semibold mb-4 text-neutral-800">开发者验证</h3>
-            <p class="text-neutral-600 mb-6">请输入开发者密码</p>
-            
-            <div class="mb-6">
-                <label for="developerPassword" class="block text-sm font-medium text-neutral-700 mb-1">密码</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                        <i class="fa fa-key"></i>
-                    </span>
-                    <input type="password" id="developerPassword" 
-                        class="w-full pl-10 px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 input-focus" 
-                        placeholder="请输入开发者密码" maxlength="6">
-                </div>
-                <p id="developerPwdError" class="mt-1 text-sm text-red-500 hidden"></p>
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button id="cancelDeveloperBtn" class="px-5 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors">取消</button>
-                <button id="confirmDeveloperBtn" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">确认</button>
-            </div>
-        </div>
-    </div>
+// 移动一个盘子的操作
+void move(char from, char to) {
+    cout &lt;&lt; "将盘子从 " &lt;&lt; from &lt;&lt; " 移动到 " &lt;&lt; to &lt;&lt; endl;
+}
 
-    <!-- 开发者选项页面 -->
-    <div id="developerPage" class="fixed inset-0 z-50 bg-white p-6 md:p-10 overflow-auto hidden animate-fade">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-bold text-neutral-800">开发者选项</h2>
-                <button id="exitDeveloperBtn" class="p-2 rounded-full hover:bg-neutral-200 transition-colors">
-                    <i class="fa fa-sign-out text-neutral-600"></i>
-                </button>
-            </div>
-            
-            <!-- 数据管理 -->
-            <div class="mb-10">
-                <h3 class="text-xl font-semibold mb-4 text-neutral-800">数据管理</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <button id="exportAllDataBtn" class="developer-item justify-center text-primary font-medium">
-                        <i class="fa fa-download mr-2"></i>导出所有数据
-                    </button>
-                    <button id="clearAllDataBtn" class="developer-item justify-center text-red-500 font-medium">
-                        <i class="fa fa-trash mr-2"></i>清除所有数据
-                    </button>
+// 汉诺塔递归求解函数
+// 参数说明：
+// n: 盘子数量
+// a: 源柱子
+// b: 辅助柱子
+// c: 目标柱子
+void hanoi(int n, char a, char b, char c) {
+    // 递归终止条件：只有一个盘子时直接移动
+    if (n == 1) {
+        move(a, c);
+        return;
+    }
+    
+    // 递归步骤1：将n-1个盘子从a柱移到b柱，借助c柱
+    hanoi(n - 1, a, c, b);
+    
+    // 步骤2：将第n个盘子从a柱直接移到c柱
+    move(a, c);
+    
+    // 递归步骤3：将n-1个盘子从b柱移到c柱，借助a柱
+    hanoi(n - 1, b, a, c);
+}
+
+// 算法核心说明：
+// 1. 采用分治思想，将复杂问题分解为简单子问题
+// 2. 递归终止条件：1个盘子直接移动
+// 3. 递归步骤：
+//    - 先将n-1个盘子从源柱移到辅助柱
+//    - 将第n个盘子从源柱移到目标柱
+//    - 最后将n-1个盘子从辅助柱移到目标柱
+// 4. 移动次数：2^n - 1，是最优解法
+// 该算法清晰展示了递归的精髓：将大问题分解为相似的小问题</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- 用户管理 -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold text-neutral-800">注册用户管理</h3>
-                    <button id="addUserBtn" class="developer-item justify-center text-primary font-medium">
-                        <i class="fa fa-plus mr-2"></i>添加新用户
-                    </button>
+        </section>
+
+        <!-- 联系方式 -->
+        <section id="contact" class="py-20 bg-darker relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">联系方式</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                    <p class="text-gray-400 mt-4 max-w-2xl mx-auto">如果你对我的项目或竞赛经历感兴趣，或者想一起交流算法问题，欢迎随时联系我。</p>
                 </div>
                 
-                <div id="usersList">
-                    <!-- 用户列表将通过JS动态生成 -->
+                <div class="grid md:grid-cols-5 gap-8">
+                    <div class="md:col-span-2 space-y-6">
+                        <div class="bg-dark p-6 rounded-xl border border-gray-800">
+                            <h3 class="text-xl font-bold mb-4">联系信息</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mr-4 mt-1">
+                                        <i class="fa fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">电子邮箱</h4>
+                                        <p class="text-gray-400">暂无</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mr-4 mt-1">
+                                        <i class="fa fa-qq"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">QQ</h4>
+                                        <p class="text-gray-400">3867703070</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary mr-4 mt-1">
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">微信</h4>
+                                        <p class="text-gray-400">wxid_pcpto41q7ua922</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 调整后的社交媒体部分，更宽的显示空间 -->
+                        <div class="bg-dark p-6 rounded-xl border border-gray-800 max-w-2xl mx-auto">
+                            <h3 class="text-xl font-bold mb-4">社交媒体</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <a href="#" class="flex items-center p-4 bg-darker rounded-lg border border-gray-800 hover:border-primary/50 transition-colors">
+                                    <i class="fa fa-github text-2xl mr-4"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="font-medium text-truncate">GitHub</h4>
+                                        <p class="text-sm text-gray-400 social-link">llx-code</p>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="flex items-center p-4 bg-darker rounded-lg border border-gray-800 hover:border-primary/50 transition-colors">
+                                    <i class="fa fa-codeforces text-2xl mr-4"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="font-medium text-truncate">Codeforces</h4>
+                                        <p class="text-sm text-gray-400 social-link">暂无</p>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="flex items-center p-4 bg-darker rounded-lg border border-gray-800 hover:border-primary/50 transition-colors">
+                                    <i class="fa fa-cnblogs text-2xl mr-4"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="font-medium text-truncate">博客园</h4>
+                                        <p class="text-sm text-gray-400 social-link">暂无</p>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="flex items-center p-4 bg-darker rounded-lg border border-gray-800 hover:border-primary/50 transition-colors">
+                                    <i class="fa fa-bilibili text-2xl mr-4"></i>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="font-medium text-truncate">哔哩哔哩</h4>
+                                        <p class="text-sm text-gray-400 social-link">凌溪不爱游戏</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-3">
+                        <div class="bg-dark p-8 rounded-xl border border-gray-800 h-full">
+                            <h3 class="text-xl font-bold mb-6">给作者留言</h3>
+                            <div id="message-form-container">
+                                <textarea id="message" rows="8" class="w-full bg-darker border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors resize-none" placeholder="请输入你想对我说的话..."></textarea>
+                                
+                                <div class="mt-4 flex justify-between items-center">
+                                    <button id="submit-message" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                                        <i class="fa fa-paper-plane"></i> 发送留言
+                                    </button>
+                                    <span id="message-status" class="text-gray-400 text-sm hidden"></span>
+                                </div>
+                                
+                                <p id="secret-message" class="mt-6 text-sm text-gray-500 secret-hover text-center">
+                                    留言记录
+                                </p>
+                            </div>
+                            
+                            <!-- 消息一览表 (默认隐藏) -->
+                            <div id="messages-list" class="hidden mt-6">
+                                <h4 class="text-lg font-semibold mb-4 flex items-center">
+                                    <i class="fa fa-comments text-primary mr-2"></i> 留言列表
+                                </h4>
+                                <div id="messages-container" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                                    <!-- 留言将通过JavaScript动态添加到这里 -->
+                                    <div class="text-gray-400 text-center py-8" id="no-messages">
+                                        暂无留言
+                                    </div>
+                                </div>
+                                <button id="back-to-form" class="mt-4 text-primary hover:text-primary/80 text-sm flex items-center">
+                                    <i class="fa fa-arrow-left mr-1"></i> 返回留言
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark border-t border-gray-800 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <span class="text-primary text-2xl"><i class="fa fa-code"></i></span>
+                    <span class="font-mono font-bold text-xl">OIer_Profile</span>
+                </div>
+                
+                <div class="text-gray-400 text-sm">
+                    © 2025 刘凌溪的个人网站 | 专注于算法竞赛与程序设计
+                </div>
+                
+                <div class="flex gap-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-codeforces"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-cnblogs"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-wechat"></i>
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 invisible">
+        <i class="fa fa-arrow-up"></i>
+    </button>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // DOM 元素 - 认证相关
-            const authPage = document.getElementById('authPage');
-            const memoApp = document.getElementById('memoApp');
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const showRegisterBtn = document.getElementById('showRegisterBtn');
-            const showLoginBtn = document.getElementById('showLoginBtn');
-            const loginBtn = document.getElementById('loginBtn');
-            const registerBtn = document.getElementById('registerBtn');
-            const switchAccountBtn = document.getElementById('switchAccountBtn');
-            const deleteAccountBtn = document.getElementById('deleteAccountBtn');
-            const currentUserEl = document.getElementById('currentUser');
-            const confirmDialog = document.getElementById('confirmDialog');
-            const dialogTitle = document.getElementById('dialogTitle');
-            const dialogMessage = document.getElementById('dialogMessage');
-            const dialogCancelBtn = document.getElementById('dialogCancelBtn');
-            const dialogConfirmBtn = document.getElementById('dialogConfirmBtn');
-            const copyrightText = document.getElementById('copyrightText');
-            
-            // 登录表单元素
-            const loginUsername = document.getElementById('loginUsername');
-            const loginPassword = document.getElementById('loginPassword');
-            const loginUserError = document.getElementById('loginUserError');
-            const loginPwdError = document.getElementById('loginPwdError');
-            
-            // 注册表单元素
-            const regUsername = document.getElementById('regUsername');
-            const regPassword = document.getElementById('regPassword');
-            const regConfirmPassword = document.getElementById('regConfirmPassword');
-            const regUserError = document.getElementById('regUserError');
-            const regPwdError = document.getElementById('regPwdError');
-            const regConfirmError = document.getElementById('regConfirmError');
-            
-            // 备忘录元素
-            const memoList = document.getElementById('memoList');
-            const addMemoBtn = document.getElementById('addMemoBtn');
-            const memoCount = document.getElementById('memoCount');
-            
-            // 全屏编辑器元素
-            const fullscreenEditor = document.getElementById('fullscreenEditor');
-            const editorTitle = document.getElementById('editorTitle');
-            const editorMemoTitle = document.getElementById('editorMemoTitle');
-            const editorMemoContent = document.getElementById('editorMemoContent');
-            const saveEditorBtn = document.getElementById('saveEditorBtn');
-            const cancelEditorBtn = document.getElementById('cancelEditorBtn');
-            
-            // 用户资料对话框元素 (新增)
-            const userProfileDialog = document.getElementById('userProfileDialog');
-            const profileDialogTitle = document.getElementById('profileDialogTitle');
-            const profileUsername = document.getElementById('profileUsername');
-            const profilePassword = document.getElementById('profilePassword');
-            const profileEmail = document.getElementById('profileEmail');
-            const profileNickname = document.getElementById('profileNickname');
-            const profileNotes = document.getElementById('profileNotes');
-            const profileError = document.getElementById('profileError');
-            const profileCancelBtn = document.getElementById('profileCancelBtn');
-            const profileSaveBtn = document.getElementById('profileSaveBtn');
-            let currentEditingUser = null; // 当前正在编辑的用户名
-            
-            // 开发者选项元素
-            const developerAuth = document.getElementById('developerAuth');
-            const developerPassword = document.getElementById('developerPassword');
-            const developerPwdError = document.getElementById('developerPwdError');
-            const cancelDeveloperBtn = document.getElementById('cancelDeveloperBtn');
-            const confirmDeveloperBtn = document.getElementById('confirmDeveloperBtn');
-            const developerPage = document.getElementById('developerPage');
-            const exitDeveloperBtn = document.getElementById('exitDeveloperBtn');
-            const usersList = document.getElementById('usersList');
-            const addUserBtn = document.getElementById('addUserBtn');
-            const exportAllDataBtn = document.getElementById('exportAllDataBtn');
-            const clearAllDataBtn = document.getElementById('clearAllDataBtn');
-            
-            // 应用数据 - 扩展用户数据结构以支持更多资料信息
-            let users = JSON.parse(localStorage.getItem('memoUsers')) || {};
-            let currentUser = localStorage.getItem('currentMemoUser') || null;
-            let memos = [];
-            let currentMemoId = null;
-            let dialogAction = null;
-            let dialogActionData = null;
-            
-            // 初始化应用
-            initApp();
-            
-            function initApp() {
-                // 检查是否有已登录用户
-                if (currentUser && users[currentUser]) {
-                    showMemoApp();
-                } else {
-                    showAuthPage();
-                }
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        const backToTop = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('py-2', 'shadow-md');
+                navbar.classList.remove('py-3');
+                
+                backToTop.classList.remove('opacity-0', 'invisible');
+                backToTop.classList.add('opacity-100', 'visible');
+            } else {
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2', 'shadow-md');
+                
+                backToTop.classList.add('opacity-0', 'invisible');
+                backToTop.classList.remove('opacity-100', 'visible');
             }
-            
-            // 显示认证页面
-            function showAuthPage() {
-                authPage.classList.remove('hidden');
-                memoApp.classList.add('hidden');
-                fullscreenEditor.classList.add('hidden');
-                confirmDialog.classList.add('opacity-0', 'pointer-events-none');
-                userProfileDialog.classList.add('opacity-0', 'pointer-events-none');
-                developerAuth.classList.add('opacity-0', 'pointer-events-none');
-                developerPage.classList.add('hidden');
-                
-                // 显示登录表单
-                registerForm.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-                resetLoginForm();
-                resetRegisterForm();
-                loginUsername.focus();
+        });
+        
+        // 移动端菜单切换
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const icon = menuToggle.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.replace('fa-bars', 'fa-times');
+            } else {
+                icon.classList.replace('fa-times', 'fa-bars');
             }
-            
-            // 显示备忘录应用
-            function showMemoApp() {
-                if (!currentUser) return;
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
                 
-                // 确保用户数据结构完整
-                if (!users[currentUser].profile) {
-                    users[currentUser].profile = {
-                        email: '',
-                        nickname: '',
-                        notes: ''
-                    };
-                    localStorage.setItem('memoUsers', JSON.stringify(users));
+                // 关闭移动端菜单
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    const icon = menuToggle.querySelector('i');
+                    icon.classList.replace('fa-times', 'fa-bars');
                 }
                 
-                // 加载当前用户的备忘录
-                memos = users[currentUser]?.memos || [];
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
                 
-                // 更新UI
-                currentUserEl.textContent = users[currentUser].profile.nickname || currentUser;
-                renderMemos();
-                updateMemoCount();
-                
-                // 显示应用
-                authPage.classList.add('hidden');
-                memoApp.classList.remove('hidden');
-            }
-            
-            // 注册新用户
-            function register() {
-                const username = regUsername.value.trim();
-                const password = regPassword.value.trim();
-                const confirmPassword = regConfirmPassword.value.trim();
-                let isValid = true;
-                
-                // 清空错误信息
-                regUserError.classList.add('hidden');
-                regPwdError.classList.add('hidden');
-                regConfirmError.classList.add('hidden');
-                
-                // 验证用户名
-                if (!username) {
-                    showError(regUserError, '用户名不能为空');
-                    isValid = false;
-                } else if (username.length > 14) {
-                    showError(regUserError, '用户名不能超过14个字符');
-                    isValid = false;
-                } else if (users[username]) {
-                    showError(regUserError, '用户名已存在');
-                    isValid = false;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
                 }
-                
-                // 验证密码
-                if (!password) {
-                    showError(regPwdError, '密码不能为空');
-                    isValid = false;
-                } else if (password.length !== 6 || !/^\d+$/.test(password)) {
-                    showError(regPwdError, '密码必须是6位数字');
-                    isValid = false;
-                }
-                
-                // 验证确认密码
-                if (password !== confirmPassword) {
-                    showError(regConfirmError, '两次输入的密码不一致');
-                    isValid = false;
-                }
-                
-                if (isValid) {
-                    // 创建新用户，包含基本资料结构
-                    users[username] = {
-                        password: password,
-                        memos: [],
-                        profile: {
-                            email: '',
-                            nickname: '',
-                            notes: ''
+            });
+        });
+        
+        // 返回顶部
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 竞赛统计图表 - 只显示2024年数据
+        const ctx = document.getElementById('contestChart').getContext('2d');
+        const contestChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['2024.10', '2025.10 (预计)'],
+                datasets: [
+                    {
+                        label: 'CSP-J',
+                        data: [100, null],  // 2024-J得100分，2025待续
+                        borderColor: '#6366f1',  // 主色调 - 靛蓝色
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#6366f1'
+                    },
+                    {
+                        label: 'CSP-S',
+                        data: [null, null],  // 2024-S未参加，2025待续
+                        borderColor: '#10b981',  // 辅助色 - 绿色
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'CSP竞赛得分',
+                        color: '#f3f4f6',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
                         }
-                    };
-                    localStorage.setItem('memoUsers', JSON.stringify(users));
-                    
-                    // 自动登录新用户
-                    currentUser = username;
-                    localStorage.setItem('currentMemoUser', currentUser);
-                    
-                    // 切换到应用
-                    showMemoApp();
-                    
-                    // 重置表单
-                    resetRegisterForm();
-                }
-            }
-            
-            // 登录
-            function login() {
-                const username = loginUsername.value.trim();
-                const password = loginPassword.value.trim();
-                let isValid = true;
-                
-                // 清空错误信息
-                loginUserError.classList.add('hidden');
-                loginPwdError.classList.add('hidden');
-                
-                // 验证用户名
-                if (!username) {
-                    showError(loginUserError, '用户名不能为空');
-                    isValid = false;
-                } else if (!users[username]) {
-                    showError(loginUserError, '用户名不存在');
-                    isValid = false;
-                }
-                
-                // 验证密码
-                if (!password) {
-                    showError(loginPwdError, '密码不能为空');
-                    isValid = false;
-                } else if (users[username] && users[username].password !== password) {
-                    showError(loginPwdError, '密码不正确');
-                    isValid = false;
-                }
-                
-                if (isValid) {
-                    // 保存当前用户
-                    currentUser = username;
-                    localStorage.setItem('currentMemoUser', currentUser);
-                    
-                    // 切换到应用
-                    showMemoApp();
-                    
-                    // 重置表单
-                    resetLoginForm();
-                }
-            }
-            
-            // 切换账号
-            function switchAccount() {
-                currentUser = null;
-                localStorage.removeItem('currentMemoUser');
-                showAuthPage();
-            }
-            
-            // 注销账号
-            function deleteAccount() {
-                if (!currentUser) return;
-                
-                // 显示确认对话框
-                dialogTitle.textContent = '确认注销账号？';
-                dialogMessage.textContent = '此操作将删除您的所有备忘录和账号信息，且无法恢复。';
-                dialogAction = 'deleteAccount';
-                
-                confirmDialog.classList.remove('opacity-0', 'pointer-events-none');
-                confirmDialog.querySelector('div').classList.remove('scale-95');
-                confirmDialog.querySelector('div').classList.add('scale-100');
-            }
-            
-            // 确认对话框操作
-            function handleDialogConfirm() {
-                if (dialogAction === 'deleteAccount') {
-                    confirmAccountDeletion();
-                } else if (dialogAction === 'deleteUser') {
-                    confirmUserDeletion();
-                } else if (dialogAction === 'clearAllData') {
-                    confirmClearAllData();
-                }
-                
-                closeDialog();
-            }
-            
-            // 确认注销账号
-            function confirmAccountDeletion() {
-                if (!currentUser) return;
-                
-                // 删除当前用户
-                delete users[currentUser];
-                localStorage.setItem('memoUsers', JSON.stringify(users));
-                
-                // 清除登录状态
-                currentUser = null;
-                localStorage.removeItem('currentMemoUser');
-                
-                // 回到登录界面
-                showAuthPage();
-            }
-            
-            // 关闭对话框
-            function closeDialog() {
-                confirmDialog.classList.add('opacity-0', 'pointer-events-none');
-                confirmDialog.querySelector('div').classList.remove('scale-100');
-                confirmDialog.querySelector('div').classList.add('scale-95');
-                dialogAction = null;
-                dialogActionData = null;
-            }
-            
-            // 渲染所有备忘录
-            function renderMemos() {
-                if (memos.length === 0) {
-                    memoList.innerHTML = `
-                        <div class="col-span-full flex flex-col items-center justify-center py-16 text-neutral-500">
-                            <i class="fa fa-sticky-note-o text-5xl mb-4 opacity-30"></i>
-                            <p class="text-lg">还没有备忘录，点击"新建备忘录"开始添加</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                memoList.innerHTML = '';
-                
-                // 按创建时间排序
-                const sortedMemos = [...memos].sort((a, b) => b.createdAt - a.createdAt);
-                
-                sortedMemos.forEach(memo => {
-                    const memoCard = document.createElement('div');
-                    memoCard.className = 'bg-white rounded-xl shadow-card hover:shadow-card-hover p-5 transition-all duration-300 transform hover:-translate-y-1 border border-neutral-200 group cursor-pointer';
-                    memoCard.setAttribute('data-id', memo.id);
-                    
-                    // 蓝绿色系随机渐变背景
-                    const gradients = [
-                        'from-blue-50 to-cyan-50 border-blue-100',
-                        'from-green-50 to-emerald-50 border-green-100',
-                        'from-blue-50 to-green-50 border-teal-100',
-                    ];
-                    const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
-                    memoCard.classList.add(...randomGradient.split(' '));
-                    
-                    // 格式化日期
-                    const date = new Date(memo.createdAt);
-                    const formattedDate = date.toLocaleString('zh-CN', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                    
-                    // 截断长内容
-                    const truncatedContent = memo.content.length > 100 
-                        ? memo.content.substring(0, 100) + '...' 
-                        : memo.content;
-                    
-                    memoCard.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-semibold text-neutral-800 text-lg line-clamp-1">${memo.title || '无标题'}</h3>
-                            <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <button class="edit-btn p-1.5 rounded-full hover:bg-neutral-200 transition-colors" title="编辑">
-                                    <i class="fa fa-pencil text-primary"></i>
-                                </button>
-                                <button class="delete-btn p-1.5 rounded-full hover:bg-red-100 transition-colors" title="删除">
-                                    <i class="fa fa-trash text-neutral-600"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <p class="text-neutral-600 text-sm mb-4 line-clamp-4 whitespace-pre-line">${truncatedContent}</p>
-                        <div class="text-xs text-neutral-500">
-                            <i class="fa fa-clock-o mr-1"></i>${formattedDate}
-                        </div>
-                    `;
-                    
-                    memoList.appendChild(memoCard);
-                    
-                    // 添加事件监听
-                    const editBtn = memoCard.querySelector('.edit-btn');
-                    const deleteBtn = memoCard.querySelector('.delete-btn');
-                    
-                    editBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openEditor(true, memo);
-                    });
-                    
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteMemo(memo.id);
-                    });
-                    
-                    memoCard.addEventListener('click', () => {
-                        openEditor(true, memo);
-                    });
-                });
-            }
-            
-            // 打开全屏编辑器
-            function openEditor(isEdit = false, memo = null) {
-                if (isEdit && memo) {
-                    editorTitle.textContent = '编辑备忘录';
-                    editorMemoTitle.value = memo.title || '';
-                    editorMemoContent.value = memo.content || '';
-                    currentMemoId = memo.id;
-                } else {
-                    editorTitle.textContent = '新建备忘录';
-                    editorMemoTitle.value = '';
-                    editorMemoContent.value = '';
-                    currentMemoId = null;
-                }
-                
-                // 显示全屏编辑器
-                fullscreenEditor.classList.remove('hidden');
-                // 自动聚焦到标题
-                setTimeout(() => {
-                    editorMemoTitle.focus();
-                }, 100);
-            }
-            
-            // 保存编辑内容
-            function saveEditor() {
-                const title = editorMemoTitle.value.trim();
-                const content = editorMemoContent.value.trim();
-                
-                if (!title && !content) {
-                    alert('标题和内容不能同时为空');
-                    return;
-                }
-                
-                if (currentMemoId) {
-                    // 更新现有备忘录
-                    const index = memos.findIndex(m => m.id === currentMemoId);
-                    if (index !== -1) {
-                        memos[index] = {
-                            ...memos[index],
-                            title,
-                            content,
-                            updatedAt: Date.now()
-                        };
+                    },
+                    legend: {
+                        labels: {
+                            color: '#f3f4f6'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + '分';
+                                } else {
+                                    if (context.dataIndex === 0 && context.datasetIndex === 1) {
+                                        label += '未参加';
+                                    } else {
+                                        label += '待续';
+                                    }
+                                }
+                                return label;
+                            }
+                        }
                     }
-                } else {
-                    // 创建新备忘录
-                    const newMemo = {
-                        id: Date.now().toString(),
-                        title,
-                        content,
-                        createdAt: Date.now(),
-                        updatedAt: Date.now()
-                    };
-                    memos.push(newMemo);
-                }
-                
-                // 保存到localStorage
-                users[currentUser].memos = memos;
-                localStorage.setItem('memoUsers', JSON.stringify(users));
-                
-                // 更新列表并关闭编辑器
-                renderMemos();
-                updateMemoCount();
-                fullscreenEditor.classList.add('hidden');
-                currentMemoId = null;
-            }
-            
-            // 删除备忘录
-            function deleteMemo(id) {
-                if (confirm('确定要删除这条备忘录吗？')) {
-                    memos = memos.filter(m => m.id !== id);
-                    
-                    // 保存到localStorage
-                    users[currentUser].memos = memos;
-                    localStorage.setItem('memoUsers', JSON.stringify(users));
-                    
-                    renderMemos();
-                    updateMemoCount();
-                }
-            }
-            
-            // 更新备忘录计数
-            function updateMemoCount() {
-                memoCount.querySelector('span').textContent = memos.length;
-            }
-            
-            // 显示错误信息
-            function showError(element, message) {
-                element.textContent = message;
-                element.classList.remove('hidden');
-                // 添加抖动动画
-                element.parentElement.classList.add('animate-shake');
-                setTimeout(() => {
-                    element.parentElement.classList.remove('animate-shake');
-                }, 500);
-            }
-            
-            // 重置登录表单
-            function resetLoginForm() {
-                loginUsername.value = '';
-                loginPassword.value = '';
-                loginUserError.classList.add('hidden');
-                loginPwdError.classList.add('hidden');
-            }
-            
-            // 重置注册表单
-            function resetRegisterForm() {
-                regUsername.value = '';
-                regPassword.value = '';
-                regConfirmPassword.value = '';
-                regUserError.classList.add('hidden');
-                regPwdError.classList.add('hidden');
-                regConfirmError.classList.add('hidden');
-            }
-            
-            // 打开用户资料对话框
-            function openUserProfileDialog(username, isNew = false) {
-                currentEditingUser = username;
-                
-                // 初始化表单
-                profileError.classList.add('hidden');
-                profileUsername.value = username;
-                profilePassword.value = ''; // 密码留空表示不修改
-                
-                // 如果是现有用户，加载其资料
-                if (!isNew && users[username]) {
-                    profileDialogTitle.textContent = '编辑用户资料';
-                    const profile = users[username].profile || {};
-                    profileEmail.value = profile.email || '';
-                    profileNickname.value = profile.nickname || '';
-                    profileNotes.value = profile.notes || '';
-                } else {
-                    // 新用户
-                    profileDialogTitle.textContent = '添加新用户';
-                    profileEmail.value = '';
-                    profileNickname.value = '';
-                    profileNotes.value = '';
-                }
-                
-                // 显示对话框
-                userProfileDialog.classList.remove('opacity-0', 'pointer-events-none');
-                userProfileDialog.querySelector('div').classList.remove('scale-95');
-                userProfileDialog.querySelector('div').classList.add('scale-100');
-                profileUsername.focus();
-            }
-            
-            // 关闭用户资料对话框
-            function closeUserProfileDialog() {
-                userProfileDialog.classList.add('opacity-0', 'pointer-events-none');
-                userProfileDialog.querySelector('div').classList.remove('scale-100');
-                userProfileDialog.querySelector('div').classList.add('scale-95');
-                currentEditingUser = null;
-            }
-            
-            // 保存用户资料
-            function saveUserProfile() {
-                const newUsername = profileUsername.value.trim();
-                const password = profilePassword.value.trim();
-                const email = profileEmail.value.trim();
-                const nickname = profileNickname.value.trim();
-                const notes = profileNotes.value.trim();
-                const isNewUser = !users[currentEditingUser];
-                
-                // 验证
-                if (!newUsername) {
-                    showError(profileError, '用户名不能为空');
-                    return;
-                }
-                
-                if (newUsername.length > 14) {
-                    showError(profileError, '用户名不能超过14个字符');
-                    return;
-                }
-                
-                // 检查用户名是否已存在（排除当前编辑的用户）
-                if (newUsername !== currentEditingUser && users[newUsername]) {
-                    showError(profileError, '用户名已存在');
-                    return;
-                }
-                
-                // 如果是新用户或修改了密码，验证密码格式
-                if ((isNewUser || password) && (password.length !== 6 || !/^\d+$/.test(password))) {
-                    showError(profileError, '密码必须是6位数字');
-                    return;
-                }
-                
-                // 处理用户名变更
-                if (newUsername !== currentEditingUser && !isNewUser) {
-                    // 将数据复制到新用户名
-                    users[newUsername] = users[currentEditingUser];
-                    // 删除旧用户名
-                    delete users[currentEditingUser];
-                    
-                    // 如果当前登录用户是被修改的用户，更新当前用户
-                    if (currentUser === currentEditingUser) {
-                        currentUser = newUsername;
-                        localStorage.setItem('currentMemoUser', currentUser);
-                        currentUserEl.textContent = nickname || newUsername;
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 400,  // CSP满分400分
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#f3f4f6',
+                            callback: function(value) {
+                                return value + '分';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '得分',
+                            color: '#f3f4f6'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#f3f4f6'
+                        },
+                        title: {
+                            display: true,
+                            text: '比赛时间',
+                            color: '#f3f4f6'
+                        }
                     }
                 }
-                
-                // 准备保存的数据
-                const usernameToSave = newUsername;
-                
-                // 如果是新用户，初始化用户数据
-                if (isNewUser) {
-                    users[usernameToSave] = {
-                        password: password,
-                        memos: [],
-                        profile: {}
-                    };
-                } else if (password) {
-                    // 仅在提供了新密码时更新密码
-                    users[usernameToSave].password = password;
-                }
-                
-                // 确保profile对象存在
-                if (!users[usernameToSave].profile) {
-                    users[usernameToSave].profile = {};
-                }
-                
-                // 更新用户资料
-                users[usernameToSave].profile = {
-                    email,
-                    nickname,
-                    notes
-                };
-                
-                // 保存到localStorage
-                localStorage.setItem('memoUsers', JSON.stringify(users));
-                
-                // 关闭对话框并更新用户列表
-                closeUserProfileDialog();
-                renderUsersList();
-                
-                // 如果是当前用户，更新显示的昵称
-                if (currentUser === usernameToSave) {
-                    currentUserEl.textContent = nickname || usernameToSave;
-                }
             }
+        });
+
+        // 代码块展开/折叠功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('.toggle-code');
             
-            // 开发者选项相关功能
-            function showDeveloperAuth() {
-                developerAuth.classList.remove('opacity-0', 'pointer-events-none');
-                developerAuth.querySelector('div').classList.remove('scale-95');
-                developerAuth.querySelector('div').classList.add('scale-100');
-                developerPassword.value = '';
-                developerPwdError.classList.add('hidden');
-                developerPassword.focus();
-            }
-            
-            function hideDeveloperAuth() {
-                developerAuth.classList.add('opacity-0', 'pointer-events-none');
-                developerAuth.querySelector('div').classList.remove('scale-100');
-                developerAuth.querySelector('div').classList.add('scale-95');
-            }
-            
-            function verifyDeveloperPassword() {
-                const password = developerPassword.value.trim();
-                // 开发者密码
-                if (password === '130627') {
-                    hideDeveloperAuth();
-                    showDeveloperPage();
-                } else {
-                    showError(developerPwdError, '密码不正确');
-                }
-            }
-            
-            function showDeveloperPage() {
-                developerPage.classList.remove('hidden');
-                renderUsersList();
-            }
-            
-            function renderUsersList() {
-                usersList.innerHTML = '';
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const codeBlock = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    const text = this.querySelector('.text');
+                    
+                    // 切换代码块显示状态
+                    codeBlock.classList.toggle('expanded');
+                    
+                    // 切换图标和文字
+                    if (codeBlock.classList.contains('expanded')) {
+                        icon.style.transform = 'rotate(180deg)';
+                        text.textContent = '收起代码';
+                        // 确保滚动到可见区域
+                        codeBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        icon.style.transform = 'rotate(0)';
+                        text.textContent = '查看代码';
+                    }
+                });
+            });
+
+            // 留言功能实现
+            const messageInput = document.getElementById('message');
+            const submitButton = document.getElementById('submit-message');
+            const messageStatus = document.getElementById('message-status');
+            const secretMessage = document.getElementById('secret-message');
+            const messageFormContainer = document.getElementById('message-form-container');
+            const messagesList = document.getElementById('messages-list');
+            const messagesContainer = document.getElementById('messages-container');
+            const noMessages = document.getElementById('no-messages');
+            const backToFormButton = document.getElementById('back-to-form');
+
+            // 从本地存储加载留言
+            function loadMessages() {
+                const messages = JSON.parse(localStorage.getItem('guestbookMessages') || '[]');
+                messagesContainer.innerHTML = '';
                 
-                if (Object.keys(users).length === 0) {
-                    usersList.innerHTML = '<p class="text-neutral-500">没有注册用户</p>';
+                if (messages.length === 0) {
+                    noMessages.style.display = 'block';
                     return;
                 }
                 
-                Object.keys(users).forEach(username => {
-                    const user = users[username];
-                    const profile = user.profile || {};
+                noMessages.style.display = 'none';
+                
+                // 倒序显示，最新的在前面
+                messages.reverse().forEach((msg, index) => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'bg-darker p-4 rounded-lg border border-gray-800';
                     
-                    const userItem = document.createElement('div');
-                    userItem.className = 'developer-item';
-                    userItem.innerHTML = `
-                        <div>
-                            <div class="font-medium">${username}</div>
-                            <div class="text-sm text-neutral-500">
-                                ${profile.nickname ? `昵称: ${profile.nickname} | ` : ''}
-                                ${profile.email ? `邮箱: ${profile.email} | ` : ''}
-                                备忘录数量: ${user.memos?.length || 0}
-                            </div>
+                    const date = new Date(msg.timestamp);
+                    const formattedDate = date.toLocaleString();
+                    
+                    messageElement.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm text-gray-400">访客 #${messages.length - index}</span>
+                            <span class="text-xs text-gray-500">${formattedDate}</span>
                         </div>
-                        <div class="flex space-x-2">
-                            <button class="edit-user-btn developer-btn" title="编辑用户" data-username="${username}">
-                                <i class="fa fa-pencil text-primary"></i>
-                            </button>
-                            <button class="delete-user-btn developer-btn" title="删除用户" data-username="${username}">
-                                <i class="fa fa-trash text-red-500"></i>
-                            </button>
-                        </div>
+                        <p class="text-gray-300 whitespace-pre-wrap">${msg.content}</p>
                     `;
                     
-                    usersList.appendChild(userItem);
-                    
-                    // 编辑用户资料
-                    userItem.querySelector('.edit-user-btn').addEventListener('click', (e) => {
-                        const username = e.currentTarget.getAttribute('data-username');
-                        openUserProfileDialog(username);
-                    });
-                    
-                    // 删除用户
-                    userItem.querySelector('.delete-user-btn').addEventListener('click', (e) => {
-                        const username = e.currentTarget.getAttribute('data-username');
-                        confirmDeleteUser(username);
-                    });
+                    messagesContainer.appendChild(messageElement);
                 });
             }
-            
-            // 确认删除用户
-            function confirmDeleteUser(username) {
-                dialogTitle.textContent = `确认删除用户 ${username}？`;
-                dialogMessage.textContent = '此操作将删除该用户的所有数据，且无法恢复。';
-                dialogAction = 'deleteUser';
-                dialogActionData = username;
-                
-                confirmDialog.classList.remove('opacity-0', 'pointer-events-none');
-                confirmDialog.querySelector('div').classList.remove('scale-95');
-                confirmDialog.querySelector('div').classList.add('scale-100');
+
+            // 保存留言到本地存储
+            function saveMessage(content) {
+                const messages = JSON.parse(localStorage.getItem('guestbookMessages') || '[]');
+                messages.push({
+                    content: content,
+                    timestamp: new Date().getTime()
+                });
+                localStorage.setItem('guestbookMessages', JSON.stringify(messages));
+                return true;
             }
-            
-            // 确认删除用户执行
-            function confirmUserDeletion() {
-                const username = dialogActionData;
-                if (!username || !users[username]) return;
+
+            // 提交留言
+            submitButton.addEventListener('click', function() {
+                const content = messageInput.value.trim();
                 
-                // 如果删除的是当前登录用户，回到登录页面
-                if (currentUser === username) {
-                    currentUser = null;
-                    localStorage.removeItem('currentMemoUser');
+                if (content === '') {
+                    showStatus('请输入留言内容', 'text-yellow-500');
+                    return;
                 }
                 
-                delete users[username];
-                localStorage.setItem('memoUsers', JSON.stringify(users));
-                renderUsersList();
-                
-                // 如果当前用户被删除，返回登录页
-                if (!currentUser) {
-                    showAuthPage();
+                if (saveMessage(content)) {
+                    messageInput.value = '';
+                    showStatus('留言发送成功！', 'text-green-500');
+                    
+                    // 3秒后隐藏状态提示
+                    setTimeout(() => {
+                        messageStatus.classList.add('hidden');
+                    }, 3000);
+                } else {
+                    showStatus('发送失败，请重试', 'text-red-500');
                 }
+            });
+
+            // 显示状态消息
+            function showStatus(text, colorClass) {
+                messageStatus.textContent = text;
+                messageStatus.className = `text-sm ${colorClass}`;
+                messageStatus.classList.remove('hidden');
             }
-            
-            // 添加新用户（通过资料对话框）
-            function addNewUser() {
-                // 生成一个临时用户名用于初始化
-                const tempUsername = 'new_user_' + Date.now().toString().slice(-4);
-                openUserProfileDialog(tempUsername, true);
-            }
-            
-            // 导出所有数据
-            function exportAllData() {
-                const dataStr = JSON.stringify(users, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(dataBlob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `memo_data_${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-            
-            // 确认清除所有数据
-            function confirmClearAllData() {
-                dialogTitle.textContent = '确认清除所有数据？';
-                dialogMessage.textContent = '此操作将删除所有用户和备忘录数据，且无法恢复。';
-                dialogAction = 'clearAllData';
-                
-                confirmDialog.classList.remove('opacity-0', 'pointer-events-none');
-                confirmDialog.querySelector('div').classList.remove('scale-95');
-                confirmDialog.querySelector('div').classList.add('scale-100');
-            }
-            
-            // 执行清除所有数据
-            function confirmClearAllData() {
-                users = {};
-                localStorage.setItem('memoUsers', JSON.stringify(users));
-                currentUser = null;
-                localStorage.removeItem('currentMemoUser');
-                renderUsersList();
-                alert('所有数据已清除');
-            }
-            
-            // 事件监听 - 认证相关
-            showRegisterBtn.addEventListener('click', () => {
-                loginForm.classList.add('hidden');
-                registerForm.classList.remove('hidden');
-                regUsername.focus();
+
+            // 秘密机关：点击声明切换到留言列表
+            secretMessage.addEventListener('click', function() {
+                messageFormContainer.classList.add('hidden');
+                messagesList.classList.remove('hidden');
+                loadMessages();
             });
-            
-            showLoginBtn.addEventListener('click', () => {
-                registerForm.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-                loginUsername.focus();
+
+            // 返回留言表单
+            backToFormButton.addEventListener('click', function() {
+                messagesList.classList.add('hidden');
+                messageFormContainer.classList.remove('hidden');
+                messageInput.focus();
             });
-            
-            loginBtn.addEventListener('click', login);
-            registerBtn.addEventListener('click', register);
-            switchAccountBtn.addEventListener('click', switchAccount);
-            deleteAccountBtn.addEventListener('click', deleteAccount);
-            dialogConfirmBtn.addEventListener('click', handleDialogConfirm);
-            dialogCancelBtn.addEventListener('click', closeDialog);
-            
-            // 按Enter键登录/注册
-            loginUsername.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') loginPassword.focus();
-            });
-            
-            loginPassword.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') login();
-            });
-            
-            regUsername.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') regPassword.focus();
-            });
-            
-            regPassword.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') regConfirmPassword.focus();
-            });
-            
-            regConfirmPassword.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') register();
-            });
-            
-            // 事件监听 - 备忘录相关
-            addMemoBtn.addEventListener('click', () => openEditor());
-            saveEditorBtn.addEventListener('click', saveEditor);
-            cancelEditorBtn.addEventListener('click', () => {
-                fullscreenEditor.classList.add('hidden');
-                currentMemoId = null;
-            });
-            
-            // 编辑器快捷键 (Ctrl+S保存)
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 's' && !fullscreenEditor.classList.contains('hidden')) {
+
+            // 按Enter键提交留言
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    saveEditor();
-                }
-            });
-            
-            // 用户资料对话框事件
-            profileSaveBtn.addEventListener('click', saveUserProfile);
-            profileCancelBtn.addEventListener('click', closeUserProfileDialog);
-            
-            // 点击对话框外部关闭
-            confirmDialog.addEventListener('click', (e) => {
-                if (e.target === confirmDialog) {
-                    closeDialog();
-                }
-            });
-            
-            userProfileDialog.addEventListener('click', (e) => {
-                if (e.target === userProfileDialog) {
-                    closeUserProfileDialog();
-                }
-            });
-            
-            // 开发者选项事件监听
-            copyrightText.addEventListener('click', showDeveloperAuth);
-            cancelDeveloperBtn.addEventListener('click', hideDeveloperAuth);
-            confirmDeveloperBtn.addEventListener('click', verifyDeveloperPassword);
-            developerPassword.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') verifyDeveloperPassword();
-            });
-            exitDeveloperBtn.addEventListener('click', () => {
-                developerPage.classList.add('hidden');
-                if (currentUser) {
-                    showMemoApp();
-                } else {
-                    showAuthPage();
-                }
-            });
-            addUserBtn.addEventListener('click', addNewUser);
-            
-            // 数据管理事件监听
-            exportAllDataBtn.addEventListener('click', exportAllData);
-            clearAllDataBtn.addEventListener('click', confirmClearAllData);
-            
-            // 点击开发者认证对话框外部关闭
-            developerAuth.addEventListener('click', (e) => {
-                if (e.target === developerAuth) {
-                    hideDeveloperAuth();
+                    submitButton.click();
+                    submitButton.click();
                 }
             });
         });
     </script>
-</body>
-</html>
+    
+    
+    
+    </body></html>
     
