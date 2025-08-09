@@ -149,11 +149,16 @@
                 <div class="flex flex-col md:flex-row items-center gap-12">
                     <div class="md:w-1/2">
                         <div class="relative">
-                            <div class="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-primary/30 animate-float">
-                                <img src="https://picsum.photos/seed/oierself/400/400" alt="OIer个人照片" class="w-full h-full object-cover">
-                            </div>
-                            <div class="absolute -bottom-4 -right-4 bg-primary text-dark font-bold px-4 py-2 rounded-lg shadow-lg">
-                                <span class="font-mono">只会语法的蒟蒻</span>
+                            <!-- 头像容器 - 增加相对定位上下文 -->
+                            <div class="relative w-64 h-64 md:w-80 md:h-80 mx-auto">
+                                <!-- 头像 -->
+                                <div class="w-full h-full rounded-full overflow-hidden border-4 border-primary/30 animate-float">
+                                    <img src="https://picsum.photos/seed/oierself/400/400" alt="OIer个人照片" class="w-full h-full object-cover">
+                                </div>
+                                <!-- 标签 - 使用相对定位确保跟随头像 -->
+                                <div class="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 bg-primary text-dark font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg shadow-lg whitespace-nowrap">
+                                    <span class="font-mono">只会语法的蒟蒻</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -206,42 +211,41 @@
                     <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
                 </div>
                 
-                <div class="grid md:grid-cols-2 gap-12 items-center">
-                    <div class="space-y-6">
-                        <p class="text-gray-300 leading-relaxed">&nbsp; &nbsp; 我是一名小升初学生，同时也是一名热爱算法竞赛的OIer。从四年级接触编程开始，学习c++时长两年半。</p>
-                        <p class="text-gray-300 leading-relaxed">&nbsp; &nbsp; 我的编程之旅始于Scratch，后来逐渐过渡到C++。在学习过程中，我发现自己对算法设计和问题求解有着浓厚的兴趣， 于是开始专注于信息学奥赛（OI）的学习与训练。</p>
-                        <p class="text-gray-300 leading-relaxed">&nbsp; &nbsp; 除了编程，我还喜欢数学，数学培养了我的逻辑思维能力，也为我的算法学习提供了很大帮助。 编程不仅是一种技能，更是一种解决问题的思维方式。</p>
-                        
-                        <div class="grid grid-cols-2 gap-4 pt-4">
-                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
-                                <h3 class="text-primary font-semibold mb-2">教育背景</h3>
-                                <p class="text-gray-400">上市中分部，住校</p>
-                            </div>
-                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
-                                <h3 class="text-primary font-semibold mb-2">编程年限</h3>
-                                <p class="text-gray-400">2.5年 摆烂式学习c++</p>
-                            </div>
-                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
-                                <h3 class="text-primary font-semibold mb-2">竞赛目标</h3>
-                                <p class="text-gray-400">NOIP 省二</p>
-                            </div>
-                            <div class="bg-dark p-4 rounded-lg border border-gray-800">
-                                <h3 class="text-primary font-semibold mb-2">未来规划</h3>
-                                <p class="text-gray-400">科技特长生</p>
-                            </div>
+                <div class="flex flex-col">
+                    <!-- 文字区域宽度加倍 -->
+                    <div class="w-full mb-12">
+                        <div class="space-y-6">
+                            <p class="text-gray-300 leading-relaxed text-lg">&nbsp; &nbsp; 我是一名小升初学生，同时也是一名热爱算法竞赛的OIer。从四年级接触编程开始，学习c++时长两年半。</p>
+                            <p class="text-gray-300 leading-relaxed text-lg">&nbsp; &nbsp; 我的编程之旅始于Scratch，后来逐渐过渡到C++。在学习过程中，我发现自己对算法设计和问题求解有着浓厚的兴趣， 于是开始专注于信息学奥赛（OI）的学习与训练。</p>
+                            <p class="text-gray-300 leading-relaxed text-lg">&nbsp; &nbsp; 除了编程，我还喜欢数学，数学培养了我的逻辑思维能力，也为我的算法学习提供了很大帮助。 编程不仅是一种技能，更是一种解决问题的思维方式。</p>
                         </div>
                     </div>
                     
-                    <div class="relative">
+                    <!-- 四个信息框改为两行两列 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-dark p-6 rounded-lg border border-gray-800">
+                            <h3 class="text-primary font-semibold mb-3 text-lg">教育背景</h3>
+                            <p class="text-gray-400">上市中分部，住校</p>
+                        </div>
+                        <div class="bg-dark p-6 rounded-lg border border-gray-800">
+                            <h3 class="text-primary font-semibold mb-3 text-lg">编程年限</h3>
+                            <p class="text-gray-400">2.5年 摆烂式学习c++</p>
+                        </div>
+                        <div class="bg-dark p-6 rounded-lg border border-gray-800">
+                            <h3 class="text-primary font-semibold mb-3 text-lg">竞赛目标</h3>
+                            <p class="text-gray-400">NOIP 省二</p>
+                        </div>
+                        <div class="bg-dark p-6 rounded-lg border border-gray-800">
+                            <h3 class="text-primary font-semibold mb-3 text-lg">未来规划</h3>
+                            <p class="text-gray-400">科技特长生</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 学习历程区域 -->
+                    <div class="mt-12 relative">
                         <div class="bg-dark p-8 rounded-xl border border-gray-800 shadow-xl">
                             <h3 class="text-xl font-bold mb-6 text-center">我的学习历程</h3>
                             <div class="space-y-6">
-                                <div class="relative pl-8 before:absolute before:left-3 before:top-0 before:bottom-0 before:w-0.5 before:bg-gray-700">
-                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                                        <i class="fa fa-check text-sm"></i>
-                                    </div>
-                                    <p class="text-gray-400">学习C++基础语法，掌握简单算法</p>
-                                </div>
                                 <div class="relative pl-8 before:absolute before:left-3 before:top-0 before:bottom-0 before:w-0.5 before:bg-gray-700">
                                     <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                                         <i class="fa fa-check text-sm"></i>
@@ -1223,4 +1227,3 @@ void hanoi(int n, char a, char b, char c) {
     
     
     </body></html>
-    
