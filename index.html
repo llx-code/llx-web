@@ -89,6 +89,24 @@
                 -webkit-box-orient: vertical;
                 white-space: normal;
             }
+            /* 同步状态样式 */
+            .sync-status {
+                font-size: 0.8rem;
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
+            }
+            .sync-spinner {
+                width: 12px;
+                height: 12px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: #6366f1;
+                animation: spin 1s ease-in-out infinite;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
         }
         
         @keyframes float {
@@ -852,7 +870,13 @@ void hanoi(int n, char a, char b, char c) {
                                     <button id="submit-message" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/30 flex items-center gap-2">
                                         <i class="fa fa-paper-plane"></i> 发送留言
                                     </button>
-                                    <span id="message-status" class="text-gray-400 text-sm hidden"></span>
+                                    <div class="flex items-center gap-3">
+                                        <span id="message-status" class="text-gray-400 text-sm hidden"></span>
+                                        <span id="sync-status" class="sync-status text-gray-400 hidden">
+                                            <span class="sync-spinner"></span>
+                                            <span>同步中...</span>
+                                        </span>
+                                    </div>
                                 </div>
                                 
                                 <p id="secret-message" class="mt-6 text-sm text-gray-500 secret-hover text-center">
@@ -897,7 +921,6 @@ void hanoi(int n, char a, char b, char c) {
                 
                 <div class="flex gap-4 mt-4 md:mt-0">
                     <a href="#" class="text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-github"></i>
                     </a>
                     <a href="#" class="text-gray-400 hover:text-primary transition-colors">
                         <i class="fa fa-codeforces"></i>
@@ -1116,10 +1139,11 @@ void hanoi(int n, char a, char b, char c) {
                 });
             });
 
-            // 留言功能实现
+            // 跨设备留言同步实现
             const messageInput = document.getElementById('message');
             const submitButton = document.getElementById('submit-message');
             const messageStatus = document.getElementById('message-status');
+            const syncStatus = document.getElementById('sync-status');
             const secretMessage = document.getElementById('secret-message');
             const messageFormContainer = document.getElementById('message-form-container');
             const messagesList = document.getElementById('messages-list');
@@ -1127,9 +1151,93 @@ void hanoi(int n, char a, char b, char c) {
             const noMessages = document.getElementById('no-messages');
             const backToFormButton = document.getElementById('back-to-form');
 
-            // 从本地存储加载留言
-            function loadMessages() {
-                const messages = JSON.parse(localStorage.getItem('guestbookMessages') || '[]');
+            // 使用公共的GitHub Gist ID存储留言数据（此处使用示例ID，实际使用时应创建自己的Gist）
+            const GIST_ID = '81f9b40a0c4e5d85546a8a0c42c8d1f';
+            const API_URL = `https://api.github.com/gists/${GIST_ID}`;
+            
+            // 显示同步状态
+            function showSyncStatus(show) {
+                if (show) {
+                    syncStatus.classList.remove('hidden');
+                } else {
+                    syncStatus.classList.add('hidden');
+                }
+            }
+
+            // 从GitHub Gist加载留言
+            async function loadMessagesFromCloud() {
+                try {
+                    showSyncStatus(true);
+                    const response = await fetch(API_URL);
+                    
+                    if (!response.ok) {
+                        throw new Error('无法连接到服务器');
+                    }
+                    
+                    const data = await response.json();
+                    const content = data.files['messages.json'].content;
+                    const messages = JSON.parse(content);
+                    
+                    // 同时更新本地存储
+                    localStorage.setItem('guestbookMessages', JSON.stringify(messages));
+                    return messages;
+                } catch (error) {
+                    console.log('云端同步失败，使用本地数据:', error);
+                    // 失败时使用本地存储数据
+                    return JSON.parse(localStorage.getItem('guestbookMessages') || '[]');
+                } finally {
+                    showSyncStatus(false);
+                }
+            }
+
+            // 保存留言到GitHub Gist
+            async function saveMessagesToCloud(messages) {
+                try {
+                    showSyncStatus(true);
+                    // 获取当前Gist的最新版本号
+                    const response = await fetch(API_URL);
+                    if (!response.ok) {
+                        throw new Error('获取Gist信息失败');
+                    }
+                    
+                    const data = await response.json();
+                    const sha = data.sha;
+                    
+                    // 更新Gist内容
+                    const updateResponse = await fetch(API_URL, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sha: sha,
+                            files: {
+                                'messages.json': {
+                                    content: JSON.stringify(messages)
+                                }
+                            }
+                        })
+                    });
+                    
+                    if (!updateResponse.ok) {
+                        throw new Error('更新Gist失败');
+                    }
+                    
+                    // 同时更新本地存储
+                    localStorage.setItem('guestbookMessages', JSON.stringify(messages));
+                    return true;
+                } catch (error) {
+                    console.log('云端保存失败，仅保存到本地:', error);
+                    // 失败时至少保存到本地
+                    localStorage.setItem('guestbookMessages', JSON.stringify(messages));
+                    return false;
+                } finally {
+                    showSyncStatus(false);
+                }
+            }
+
+            // 显示留言
+            function displayMessages(messages) {
                 messagesContainer.innerHTML = '';
                 
                 if (messages.length === 0) {
@@ -1159,19 +1267,25 @@ void hanoi(int n, char a, char b, char c) {
                 });
             }
 
-            // 保存留言到本地存储
-            function saveMessage(content) {
-                const messages = JSON.parse(localStorage.getItem('guestbookMessages') || '[]');
+            // 加载并显示留言
+            async function loadAndDisplayMessages() {
+                const messages = await loadMessagesFromCloud();
+                displayMessages(messages);
+            }
+
+            // 保存新留言
+            async function saveNewMessage(content) {
+                const messages = await loadMessagesFromCloud();
                 messages.push({
                     content: content,
                     timestamp: new Date().getTime()
                 });
-                localStorage.setItem('guestbookMessages', JSON.stringify(messages));
-                return true;
+                
+                return await saveMessagesToCloud(messages);
             }
 
             // 提交留言
-            submitButton.addEventListener('click', function() {
+            submitButton.addEventListener('click', async function() {
                 const content = messageInput.value.trim();
                 
                 if (content === '') {
@@ -1179,17 +1293,22 @@ void hanoi(int n, char a, char b, char c) {
                     return;
                 }
                 
-                if (saveMessage(content)) {
+                showSyncStatus(true);
+                const success = await saveNewMessage(content);
+                
+                if (success) {
                     messageInput.value = '';
-                    showStatus('留言发送成功！', 'text-green-500');
-                    
-                    // 3秒后隐藏状态提示
-                    setTimeout(() => {
-                        messageStatus.classList.add('hidden');
-                    }, 3000);
+                    showStatus('留言发送成功，所有设备可见！', 'text-green-500');
                 } else {
-                    showStatus('发送失败，请重试', 'text-red-500');
+                    showStatus('发送成功但同步失败，仅本地可见', 'text-yellow-500');
                 }
+                
+                // 3秒后隐藏状态提示
+                setTimeout(() => {
+                    messageStatus.classList.add('hidden');
+                }, 3000);
+                
+                showSyncStatus(false);
             });
 
             // 显示状态消息
@@ -1199,11 +1318,11 @@ void hanoi(int n, char a, char b, char c) {
                 messageStatus.classList.remove('hidden');
             }
 
-            // 秘密机关：点击声明切换到留言列表
+            // 切换到留言列表
             secretMessage.addEventListener('click', function() {
                 messageFormContainer.classList.add('hidden');
                 messagesList.classList.remove('hidden');
-                loadMessages();
+                loadAndDisplayMessages();
             });
 
             // 返回留言表单
@@ -1218,12 +1337,18 @@ void hanoi(int n, char a, char b, char c) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     submitButton.click();
-                    submitButton.click();
                 }
             });
+
+            // 页面加载时尝试同步数据
+            loadAndDisplayMessages();
+            
+            // 定时同步数据（每30秒）
+            setInterval(loadAndDisplayMessages, 30000);
         });
     </script>
     
     
     
     </body></html>
+    
