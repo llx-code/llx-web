@@ -155,71 +155,76 @@
 
     <main>
         <!-- 英雄区域 -->
-        <section class="min-h-screen flex items-center pt-16 relative overflow-hidden">
-            <!-- 背景装饰 -->
-            <div class="absolute inset-0 z-0 opacity-10">
-                <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/30 blur-3xl"></div>
-                <div class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-secondary/30 blur-3xl"></div>
-                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMTFhMjciIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoMnYyaC0yek0zMCAzNGgydjJoLTJ6TTI0IDM0aDJ2MmgtMnptNiA2aDJ2MmgtMnptLTYgNmgydjJoLTJ6TTIwIDQwaDJ2MmgtMnptNiA2aDJ2MmgtMnptLTYgNmgydjJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')]"></div>
-            </div>
-            
-            <div class="container mx-auto px-4 py-16 z-10">
-                <div class="flex flex-col md:flex-row items-center gap-12">
-                    <div class="md:w-1/2">
-                        <div class="relative">
-                            <!-- 头像容器 - 增加相对定位上下文 -->
-                            <div class="relative w-64 h-64 md:w-80 md:h-80 mx-auto">
-                                <!-- 头像 -->
-                                <div class="w-full h-full rounded-full overflow-hidden border-4 border-primary/30 animate-float">
-                                    <img src="https://picsum.photos/seed/oierself/400/400" alt="OIer个人照片" class="w-full h-full object-cover">
-                                </div>
-                                <!-- 标签 - 使用相对定位确保跟随头像 -->
-                                <div class="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 bg-primary text-dark font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg shadow-lg whitespace-nowrap">
-                                    <span class="font-mono">只会语法的蒟蒻</span>
-                                </div>
-                            </div>
+<section class="min-h-screen flex items-center pt-16 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 z-0 opacity-10">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/30 blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-secondary/30 blur-3xl"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMTFhMjciIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoMnYyaC0yek0zMCAzNGgydjJoLTJ6TTI0IDM0aDJ2MmgtMnptNiA2aDJ2MmgtMnptLTYgNmgydjJoLTJ6TTIwIDQwaDJ2MmgtMnptNiA2aDJ2MmgtMnptLTYgNmgydjJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')]"></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-16 z-10">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2">
+                <div class="relative">
+                    <!-- 头像容器 - 增加相对定位上下文 -->
+                    <div class="relative w-64 h-64 md:w-80 md:h-80 mx-auto">
+                        <!-- 头像 -->
+                        <div class="w-full h-full rounded-full overflow-hidden border-4 border-primary/30 animate-float">
+                            <!-- 替换为你的洛谷头像链接 -->
+                            <img src="https://cdn.luogu.com.cn/upload/image_hosting/kv2l93go.png" 
+                                 alt="OIer个人照片" 
+                                 class="w-full h-full object-cover">
                         </div>
-                    </div>
-                    
-                    <div class="md:w-1/2 space-y-6">
-                        <div class="space-y-2">
-                            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight">
-                                你好，我是 <a href="https://oier.33dai.wiki/?query=%E5%88%98%E5%87%8C%E6%BA%AA" target="_blank" class="bg-gradient-to-r from-primary to-secondary text-gradient">刘凌溪</a>
-                            <p class="text-xl text-gray-400">算法竞赛 | 程序设计 爱好者</p>
-                        </h1></div>
-                        
-                        <p class="text-gray-300 text-lg leading-relaxed">热衷于算法竞赛与程序设计，享受解决复杂问题的乐趣。 从C++到数据结构，从贪心算法到动态规划，不断探索编程世界的奥秘。</p>
-                        
-                        <div class="flex flex-wrap gap-4 pt-4">
-                            <a href="#contact" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/30 flex items-center gap-2">
-                                <i class="fa fa-paper-plane"></i> 联系我
-                            </a>
-                            <a href="#contests" class="bg-transparent border border-primary text-primary hover:bg-primary/10 px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2">
-                                <i class="fa fa-trophy"></i> 竞赛经历
-                            </a>
-                        </div>
-                        
-                        <div class="flex gap-4 pt-2">
-                            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-                                <i class="fa fa-github"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-                                <i class="fa fa-cnblogs"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-                                <i class="fa fa-codeforces"></i>
-                            </a>
+                        <!-- 标签 - 使用相对定位确保跟随头像 -->
+                        <div class="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 bg-primary text-dark font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg shadow-lg whitespace-nowrap">
+                            <span class="font-mono">只会语法的蒟蒻</span>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-                <a href="#about" class="text-gray-500 hover:text-primary transition-colors">
-                    <i class="fa fa-angle-down text-2xl"></i>
-                </a>
+
+            <!-- 右侧个人介绍内容保持不变 -->
+            <div class="md:w-1/2 space-y-6">
+                <div class="space-y-2">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight">
+                        你好，我是 <a href="https://oier.33dai.wiki/?query=%E5%88%98%E5%87%8C%E6%BA%AA" target="_blank" 
+                                      class="bg-gradient-to-r from-primary to-secondary text-gradient">刘凌溪</a>
+                    <p class="text-xl text-gray-400">算法竞赛 | 程序设计 爱好者</p>
+                </h1></div>
+
+                <p class="text-gray-300 text-lg leading-relaxed">热衷于算法竞赛与程序设计，享受解决复杂问题的乐趣。 从C++到数据结构，从贪心算法到动态规划，不断探索编程世界的奥秘。</p>
+
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#contact" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                        <i class="fa fa-paper-plane"></i> 联系我
+                    </a>
+                    <a href="#contests" class="bg-transparent border border-primary text-primary hover:bg-primary/10 px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2">
+                        <i class="fa fa-trophy"></i> 竞赛经历
+                    </a>
+                </div>
+
+                <div class="flex gap-4 pt-2">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                        <i class="fa fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                        <i class="fa fa-cnblogs"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                        <i class="fa fa-codeforces"></i>
+                    </a>
+                </div>
             </div>
-        </section>
+        </div>
+    </div>
+
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <a href="#about" class="text-gray-500 hover:text-primary transition-colors">
+            <i class="fa fa-angle-down text-2xl"></i>
+        </a>
+    </div>
+</section>
 
         <!-- 关于我 -->
         <section id="about" class="py-20 bg-darker relative">
