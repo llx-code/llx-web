@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日历</title>
+    <title>翻转时钟与日历</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
     <style>
@@ -12,10 +11,88 @@
             background-color: #121212;
             color: #e0e0e0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 50px; /* 增加顶部内边距，避免内容顶边 */
         }
+        /* 内容容器 */
+        .content-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0; /* 调整间距 */
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            position: relative; /* 修复定位问题，避免隐藏时布局错乱 */
+        }
+        .content-hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            position: absolute;
+            visibility: hidden;
+            pointer-events: none; /* 隐藏时禁止交互 */
+        }
+        /* 时钟样式 */
+        .clock-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            padding: 40px 0;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .digit {
+            position: relative;
+            width: 80px;
+            height: 120px;
+            perspective: 1000px;
+        }
+        .digit-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+        }
+        .digit-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            font-weight: bold;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .digit-front {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+        .digit-back {
+            background-color: #333;
+            color: #e0e0e0;
+            transform: scaleY(0);
+        }
+        .colon {
+            font-size: 60px;
+            color: #e0e0e0; /* 调整颜色，使其更明显 */
+            user-select: none;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        /* 日历样式 */
         .calendar-container {
             max-width: 600px;
-            margin: 50px auto;
             background-color: #1e1e1e;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -31,6 +108,7 @@
         .calendar-header h1 {
             font-size: 24px;
             font-weight: 600;
+            margin: 0; /* 清除默认边距 */
         }
         .calendar-nav button {
             background: none;
@@ -40,6 +118,9 @@
             padding: 8px;
             border-radius: 50%;
             transition: background-color 0.2s;
+            display: flex; /* 确保图标居中 */
+            align-items: center;
+            justify-content: center;
         }
         .calendar-nav button:hover {
             background-color: #333;
@@ -75,6 +156,7 @@
         .other-month {
             color: #555;
             background-color: #252525;
+            cursor: default; /* 非当前月日期禁止点击 */
         }
         .today {
             background-color: transparent;
@@ -103,102 +185,260 @@
             border-radius: 50%;
             z-index: -1;
         }
+        /* 切换选中标志 */
+        .toggle-container {
+            display: flex;
+            width: 300px;
+            height: 50px;
+            background-color: #252525;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        .toggle-btn {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 1;
+            transition: color 0.3s;
+        }
+        .toggle-indicator {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background-color: #333;
+            border-radius: 25px;
+            transition: transform 0.3s ease;
+        }
+        .toggle-indicator.clock-active {
+            transform: translateX(0);
+        }
+        .toggle-indicator.calendar-active {
+            transform: translateX(100%);
+        }
+        .toggle-btn.active {
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <button id="prev-month" class="calendar-nav">
-                <i data-lucide="chevron-left"></i>
-            </button>
-            <h1 id="current-month-year"></h1>
-            <button id="next-month" class="calendar-nav">
-                <i data-lucide="chevron-right"></i>
-            </button>
+    <!-- 切换按钮 -->
+    <div class="toggle-container">
+        <div class="toggle-indicator clock-active"></div>
+        <div class="toggle-btn active" id="clock-toggle">时钟</div>
+        <div class="toggle-btn" id="calendar-toggle">日历</div>
+    </div>
+
+    <!-- 内容容器 -->
+    <div class="content-container" id="clock-content">
+        <div class="clock-container">
+            <div class="digit" data-digit="0"></div>
+            <div class="digit" data-digit="0"></div>
+            <div class="colon">:</div>
+            <div class="digit" data-digit="0"></div>
+            <div class="digit" data-digit="0"></div>
+            <div class="colon">:</div>
+            <div class="digit" data-digit="0"></div>
+            <div class="digit" data-digit="0"></div>
         </div>
-        <div class="weekdays">
-            <div>日</div>
-            <div>一</div>
-            <div>二</div>
-            <div>三</div>
-            <div>四</div>
-            <div>五</div>
-            <div>六</div>
+    </div>
+
+    <div class="content-container content-hidden" id="calendar-content">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prev-month" class="calendar-nav">
+                    <i data-lucide="chevron-left"></i> <!-- 修复标签错误 -->
+                </button>
+                <h1 id="current-month-year"></h1>
+                <button id="next-month" class="calendar-nav">
+                    <i data-lucide="chevron-right"></i> <!-- 修复标签错误 -->
+                </button>
+            </div>
+            <div class="weekdays">
+                <div>日</div>
+                <div>一</div>
+                <div>二</div>
+                <div>三</div>
+                <div>四</div>
+                <div>五</div>
+                <div>六</div>
+            </div>
+            <div id="days-container" class="days"></div>
         </div>
-        <div id="days-container" class="days"></div>
     </div>
 
     <script>
-        lucide.createIcons();
-
-        const daysContainer = document.getElementById('days-container');
-        const currentMonthYearElement = document.getElementById('current-month-year');
-        const prevMonthButton = document.getElementById('prev-month');
-        const nextMonthButton = document.getElementById('next-month');
-
-        let currentDate = new Date();
-        let selectedDate = null;
-
-        function renderCalendar(year, month) {
-            daysContainer.innerHTML = '';
-            currentMonthYearElement.textContent = `${year}年${month + 1}月`;
-
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-            // 添加上个月的日期
-            for (let i = firstDay - 1; i >= 0; i--) {
-                const dayElement = document.createElement('div');
-                dayElement.classList.add('day', 'other-month');
-                dayElement.textContent = daysInPrevMonth - i;
-                daysContainer.appendChild(dayElement);
-            }
-
-            // 添加当前月的日期
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dayElement = document.createElement('div');
-                dayElement.classList.add('day');
-                dayElement.textContent = i;
-                
-                const date = new Date(year, month, i);
-                const today = new Date();
-                
-                if (date.toDateString() === today.toDateString()) {
-                    dayElement.classList.add('today');
-                }
-
-                if (selectedDate && date.toDateString() === selectedDate.toDateString()) {
-                    dayElement.classList.add('selected');
-                }
-
-                dayElement.addEventListener('click', () => {
-                    const previouslySelected = document.querySelector('.day.selected');
-                    if (previouslySelected) {
-                        previouslySelected.classList.remove('selected');
-                    }
-                    dayElement.classList.add('selected');
-                    selectedDate = new Date(year, month, i);
-                });
-
-                daysContainer.appendChild(dayElement);
-            }
-            
+        // 确保Lucide图标加载完成
+        document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-        }
 
-        prevMonthButton.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
+            // 切换功能实现
+            const clockContent = document.getElementById('clock-content');
+            const calendarContent = document.getElementById('calendar-content');
+            const clockToggle = document.getElementById('clock-toggle');
+            const calendarToggle = document.getElementById('calendar-toggle');
+            const toggleIndicator = document.querySelector('.toggle-indicator');
+
+            function switchToClock() {
+                clockContent.classList.remove('content-hidden');
+                calendarContent.classList.add('content-hidden');
+                clockToggle.classList.add('active');
+                calendarToggle.classList.remove('active');
+                toggleIndicator.classList.remove('calendar-active');
+                toggleIndicator.classList.add('clock-active');
+            }
+
+            function switchToCalendar() {
+                calendarContent.classList.remove('content-hidden');
+                clockContent.classList.add('content-hidden');
+                calendarToggle.classList.add('active');
+                clockToggle.classList.remove('active');
+                toggleIndicator.classList.remove('clock-active');
+                toggleIndicator.classList.add('calendar-active');
+                // 重新渲染图标（防止切换后图标消失）
+                lucide.createIcons();
+            }
+
+            clockToggle.addEventListener('click', switchToClock);
+            calendarToggle.addEventListener('click', switchToCalendar);
+
+            // 时钟功能实现
+            function createDigitDisplay(digitElement, value) {
+                digitElement.innerHTML = `
+                    <div class="digit-card">
+                        <div class="digit-face digit-front">${value}</div>
+                        <div class="digit-face digit-back">${value}</div>
+                    </div>
+                `;
+            }
+
+            function updateDigit(digitElement, newValue) {
+                const card = digitElement.querySelector('.digit-card');
+                const front = digitElement.querySelector('.digit-front');
+                
+                card.style.transform = 'scaleY(0)';
+                front.style.opacity = '0';
+                
+                setTimeout(() => {
+                    front.textContent = newValue;
+                    card.style.transform = 'scaleY(1)';
+                    front.style.opacity = '1';
+                }, 300);
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                const timeString = hours + minutes + seconds;
+
+                const digits = document.querySelectorAll('.digit');
+                timeString.split('').forEach((char, index) => {
+                    const currentValue = digits[index].querySelector('.digit-front')?.textContent;
+                    if (currentValue !== char) {
+                        updateDigit(digits[index], char);
+                    }
+                });
+            }
+
+            // 初始化时钟数字
+            document.querySelectorAll('.digit').forEach((digit) => {
+                createDigitDisplay(digit, '0');
+            });
+
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // 日历功能实现
+            const daysContainer = document.getElementById('days-container');
+            const currentMonthYearElement = document.getElementById('current-month-year');
+            const prevMonthButton = document.getElementById('prev-month');
+            const nextMonthButton = document.getElementById('next-month');
+
+            let currentDate = new Date();
+            let selectedDate = null;
+
+            function renderCalendar(year, month) {
+                daysContainer.innerHTML = '';
+                currentMonthYearElement.textContent = `${year}年${month + 1}月`;
+
+                const firstDay = new Date(year, month, 1).getDay(); // 星期几（0=周日，6=周六）
+                const daysInMonth = new Date(year, month + 1, 0).getDate(); // 当前月天数
+                const daysInPrevMonth = new Date(year, month, 0).getDate(); // 上个月天数
+
+                // 添加上个月的日期
+                for (let i = firstDay; i > 0; i--) { // 修复循环条件，正确显示上个月日期
+                    const dayElement = document.createElement('div');
+                    dayElement.classList.add('day', 'other-month');
+                    dayElement.textContent = daysInPrevMonth - i + 1;
+                    daysContainer.appendChild(dayElement);
+                }
+
+                // 添加当前月的日期
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.classList.add('day');
+                    dayElement.textContent = i;
+                    
+                    const date = new Date(year, month, i);
+                    const today = new Date();
+                    // 统一时间为0点，避免日期判断错误
+                    const compareToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    const compareDate = new Date(year, month, i);
+                    
+                    if (compareDate.toDateString() === compareToday.toDateString()) {
+                        dayElement.classList.add('today');
+                    }
+
+                    if (selectedDate && compareDate.toDateString() === selectedDate.toDateString()) {
+                        dayElement.classList.add('selected');
+                    }
+
+                    dayElement.addEventListener('click', () => {
+                        const previouslySelected = document.querySelector('.day.selected');
+                        if (previouslySelected) {
+                            previouslySelected.classList.remove('selected');
+                        }
+                        dayElement.classList.add('selected');
+                        selectedDate = new Date(year, month, i);
+                    });
+
+                    daysContainer.appendChild(dayElement);
+                }
+
+                // 补充下个月的日期，使日历填满7列
+                const totalDays = daysContainer.children.length;
+                const remainingDays = 7 - (totalDays % 7);
+                if (remainingDays < 7) {
+                    for (let i = 1; i <= remainingDays; i++) {
+                        const dayElement = document.createElement('div');
+                        dayElement.classList.add('day', 'other-month');
+                        dayElement.textContent = i;
+                        daysContainer.appendChild(dayElement);
+                    }
+                }
+            }
+
+            // 日历导航事件
+            prevMonthButton.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            });
+
+            nextMonthButton.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            });
+
+            // 初始渲染日历
             renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
         });
-
-        nextMonthButton.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
-        });
-
-        // 初始渲染
-        renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
     </script>
 </body>
 </html>
